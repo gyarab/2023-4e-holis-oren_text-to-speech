@@ -1,0 +1,106 @@
+.main-screen > .body, 
+.main-screen > .admin-body > .body
+  overflow: auto
+  margin: -5px
+  padding: 5px
+
+.form-field-span
+    display: flex
+    justify-content: space-between
+    gap: 1rem
+
+    .range-field, .form-field
+      flex: 1
+
+    .range-field
+      display: flex
+      align-items: center
+      gap: 5px
+
+      .input
+        margin-bottom: var(--pad-2)
+        text-align: center
+
+        .actual-value
+          height: 22px
+
+        .form-field
+          margin-bottom: 0
+
+      .border-value
+        margin-top: -5px
+
+.empty-screen
+  height: 100%
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+  padding-bottom: 48px
+  text-align: center
+  h5
+    margin-top: 0
+    margin-bottom: $pad
+    white-space: pre-line
+  p
+    margin-top: 0
+    margin-bottom: $pad
+    white-space: pre-line
+  .primary
+    margin-top: $pad
+
+.admin-dialog
+  width: 764px !important
+
+[data-gw="AudioWaveform"],
+  &,
+  .waveform
+    width: 100%
+    flex-grow: 1
+  &
+    display: flex
+    align-items: center
+
+  .time
+    min-width: 42px
+    white-space: nowrap
+    padding-left: 4px
+
+[data-gw="App.MicrosoftTokenScreen"],
+[data-gw="App.RecordsScreen"]
+  height: 100%
+
+[data-gw="App.RecordsScreen"]
+  min-width: map-get($breakpoints, 'sm')
+[data-gw="App.MicrosoftTokenScreen"]
+  min-width: 420px
+  .panel-container
+    &.token-form
+      margin-bottom: var(--body-padding)
+      .panel-content
+        +breakpoint(">md")
+          margin-left: auto
+          margin-right: auto
+        .form-segment
+          background: transparent
+          margin-bottom: 0
+          padding: 0
+          > .header
+            background: transparent
+            display: none
+
+          .form-buttons
+            flex-direction: column
+            align-items: stretch
+            button
+              margin: 0
+              &[type="submit"]
+                order: -1
+              &[type="reset"]
+                margin-top: calc( 2  * #{$pad_2})
+                box-shadow: 0px -42px 0px -19px var(--border-default-color)
+    .panel-content
+      +breakpoint(">md")
+        width: 75%
+      +breakpoint(">lg")
+        width: 50%

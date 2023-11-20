@@ -1,0 +1,33 @@
+GW - Goo Web
+============
+
+GW is a layer above DOM that allows you to create a more complicated
+components out of more than one DOM element, and easily compose these components
+directly via DOM (the component hierarchy is derived = require('DOM hierarchy, and
+is not tracked separately) and extend these components via a powerful class
+system that supports deriving subclasses and overriding class methods at class
+level and during instantiation.
+
+Some features:
+
+- does not have any external dependencies
+- implements highly extensible class system
+  - easy to create classes and singletons
+  - reliable support for monkey patching
+  - methods can be extended hassle free (both class and instance methods)
+  - async methods that return promises can be extended easily too (by
+    chaining promises)
+- implements component system that supports component nesting/composition
+  - components are written using the class system
+  - write your own web components
+  - create runtime hierarchy of components
+  - traverse the component tree
+  - no need to track component relationships manually, relationships
+    are derived automatically = require('DOM hierarchy
+- communication
+  - use events for communication between components
+  - all events bubble, so it's easy and cheap to listen to any child components
+- small core
+  - < 3KiB minified and gzipped
+
+

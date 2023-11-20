@@ -1,0 +1,581 @@
+// {{{ PopupMenu
+
+.popup-menu
+	background: var(--dropdown-bg)
+	+popup-shadow
+	border: none
+	border-radius: var(--dropdown-radius)
+	overflow: auto
+	display: inline-block
+	font-size: var(--dropdown-font-size)
+	padding-top: $pad_2
+	+desktop-ui
+		max-width: 350px
+		min-width: 120px
+		padding-top: $pad
+		padding-bottom: $pad
+
+	&:focus
+		outline: 0
+
+	.option
+		display: flex
+		align-items: center
+		text-decoration: none
+		color: var(--dropdown-fg)
+		--color: var(--dropdown-fg)
+		background: var(--dropdown-bg)
+		min-height: 32px
+		padding: .5rem 1rem
+
+		.option-icon,
+		.option-icon-right
+			> .icon
+				display: block
+				vertical-align: middle
+				+size(1.25rem)
+				&[data-name="check"]
+					--thickness: 2
+
+		.option-icon
+			margin-right: .5rem
+			transition: background-color var(--transition-time-short)
+			display: flex
+			align-items: center
+			color: var(--icon-static-color)
+			--color: var(--icon-static-color)
+		.option-submenu
+			> .icon
+				+size(1rem)
+
+		.option-text
+			transition: color var(--transition-time-short)
+			font-weight: var(--dropdown-font-weight)
+			padding-right: 15px
+			flex: 1
+
+		&:hover:not(:disabled)
+			color: var(--dropdown-fg-hover)
+			--color: var(--dropdown-fg-hover)
+			background: var(--dropdown-bg-hover)
+			.option-icon
+				color: var(--dropdown-fg-hover)
+				--color: var(--dropdown-fg-hover)
+
+		&.active,
+		&.active:hover
+			background-color: var(--primary-hover)
+			color: var(--primary-hover-text)
+			--color: var(--primary-hover-text)
+			.option-icon
+				color: var(--primary-hover-text)
+				--color: var(--primary-hover-text)
+
+		&.disabled
+			pointer-events: none
+			color: var(--table-muted-color)
+			--color: var(--table-muted-color)
+	
+	&.no-icons
+		.option
+			.option-icon
+				display: none
+			.option-text
+				padding-right: 0
+
+	.note
+		color: var(--app-grey)
+		font-size: 14px
+		margin-top: 15px
+
+// }}}
+// {{{ radio-field
+
+.radio-field
+	margin-bottom: 10px
+
+	.radio-item
+		display: flex
+		align-items: center
+		margin-bottom: 5px
+		line-height: 1
+
+		input
+			margin-right: 5px
+		label
+			color: #122253
+
+// }}}
+// {{{ fullscreen-message
+
+.fullscreen-message
+	display: flex
+	align-items: center
+	justify-content: center
+	font-weight: bold
+	font-size: 24px
+	color: #868F9C
+	height: 100%
+
+// }}}
+// {{{ item-list
+
+.item-list
+	a
+		display: block
+		padding: 10px
+		text-decoration: none
+		font-weight: bold
+		border-radius: 6px
+
+		&:hover
+			background: darken(#F2F4F5, 5%)
+
+		&.selected
+			color: white
+			background: #F46539
+
+
+// }}}
+// {{{ smart-table
+
+.smart-table
+	position: relative
+	overflow: auto
+	font-size: var(--font-size-base)
+	flex-grow: 1
+
+	table
+		width: 100%
+		min-height: calc( var(--table-row-min-height) * 2 )
+		border-spacing: 0
+		border-radius: var(--table-border-radius)
+
+		thead tr th
+			z-index: 1 // Required due to sticky header and tbody containing icon using masks
+
+	td, th
+		height: var(--table-row-min-height)
+		padding: var(--table-padding-y) var(--table-padding-x)
+		text-align: left
+	
+	th
+		border-bottom: var(--border-default-width) solid var(--border-default-color)
+
+	td
+		font-weight: var(--font-weight-bold)
+
+	tbody
+		tr:nth-child(odd)
+			background-color: var(--table-bg)
+		tr:nth-child(even)
+			background-color: var(--table-alternation-bg)
+
+	thead
+		tr:first-child
+			th:first-child
+				border-top-left-radius: var(--table-border-radius)
+			th:last-child
+				border-top-right-radius: var(--table-border-radius)
+
+	tr:last-child
+		td:first-child
+			border-bottom-left-radius: var(--table-border-radius)
+		td:last-child
+			border-bottom-right-radius: var(--table-border-radius)
+
+	td.right, th.right
+		text-align: right
+
+	td.center, th.center
+		text-align: center
+
+	thead tr th
+		position: sticky
+		top: 0
+		background: var(--panel-bg)
+		font-weight: var(--font-weight-bolder)
+		white-space: nowrap
+
+	tbody:empty
+		display: block // Fixes Firefox forced tbody height 0
+	
+	.empty-message
+		position: absolute
+		top: 0
+		left: 0
+		right: 0
+		bottom: 0
+		display: flex
+		align-items: center
+		justify-content: center
+		font-weight: bold
+		font-size: 24px
+		color: #868F9C
+		padding-top: var(--table-row-min-height)
+		
+	&.selectable
+		tbody
+			tr
+				cursor: pointer
+			tr.selected
+				td, th
+					background: var(--table-row-selected-bg)
+					color: var(--table-row-selected-fg)
+	&.selectable,
+	&.hoverable
+		tbody
+			tr:not(.selected):hover
+				td, th
+					background: var(--table-row-hover-bg)
+					color: var(--table-row-hover-fg)
+			// tr:nth-child(odd):not(.selected):hover
+			// 	td, th
+			// 		background: var(--table-row-hover-bg)
+			// 		color: var(--table-row-hover-fg)
+			// tr:nth-child(even):not(.selected):hover
+			// 	background: transparent
+			// 	td, th
+			// 		background: transparent
+			// 		color: inherit
+	
+	td[data-col="ctl"]
+		white-space: nowrap
+
+		.button,
+		button,
+			margin-left: 0.25rem
+			margin-right: 0.25rem
+			&:first-child
+				margin-left: 0
+			&:last-child
+				margin-right: 0
+
+	&[data-overflowed="1"]
+		[data-col="ctl"]
+			position: sticky
+			right: 0
+			box-shadow: 0 0 32px 0px rgba(0,0,0, var(--drop-shadow-hardness))
+			clip-path: inset(0px 0px 0px -32px)
+		.no-data
+			[data-col="ctl"]:empty
+				box-shadow: none
+
+		tr:nth-child(even) td:last-child
+			background-color: inherit
+		tr:nth-child(odd) td:last-child
+			background-color: inherit
+
+	&[data-gw="FilterableSmartTable"]
+		tr
+			th.filterable
+				cursor: pointer
+		th
+			.filter-icon
+				margin-left: $pad_1_4
+				vertical-align: sub
+				+size(16px)
+				color: var(--icon-static-color)
+				
+		th:hover,
+		th:focus,
+			.filter-icon
+				color: var(--icon-hover-color)
+
+		th:active
+			.filter-icon
+				color: var(--icon-active-color)
+
+		th.filtered
+			.filter-icon
+				color: var(--icon-selected-static-color)
+
+		th.filtered:hover,
+		th.filtered:focus
+			.filter-icon
+				color: var(--icon-selected-hover-color)
+
+		th.filtered:active
+			.filter-icon
+				color: var(--icon-selected-active-color)
+
+[data-gw="SmartTableFilter"]
+	border-radius: var(--table-border-radius)
+
+	input[type="search"]
+		width: calc( 100% - 2 * #{$pad} )
+		margin-left: $pad
+		margin-right: $pad
+		margin-bottom: $pad
+	
+	.filter-options
+
+		.filter-options-items
+			overflow: auto
+			max-height: 50vh
+
+		.check
+			padding-left: $pad
+			padding-right: $pad
+			min-height: 2rem
+			display: flex
+			align-items: center
+
+			label
+				flex-grow: 1
+				min-height: 2rem
+				line-height: 2.3
+			
+			&.check-all
+				border-bottom: var(--border-default-width) solid var(--border-default-color)
+				margin-bottom: $pad_1_4
+				padding-bottom: $pad_1_4
+
+	.filter-duration
+		padding-top: $pad_1_2
+		padding-left: $pad
+		padding-right: $pad
+
+		.filter-duration-item
+			margin-bottom: $pad_2
+			&:last-child
+				margin-bottom: $pad
+
+			.label
+				font-size: var(--font-size-sm)
+				margin-bottom: $pad_1_2
+			
+			.input-group
+				display: flex
+
+				.input-label-inset
+					position: relative
+					max-width: 6.25rem
+					margin-right: $pad
+					&:last-child
+						margin-right: 0
+					
+					input + label
+						position: absolute
+						right: 0
+						top: 50%
+						transform: translate(0, -50%)
+						text-transform: lowercase
+						margin-right: $pad_1_2
+						color: var(--input-placeholder)
+						pointer-events: none
+
+					input
+						width: 100%
+
+						&::-webkit-outer-spin-button,
+						&::-webkit-inner-spin-button
+							-webkit-appearance: none
+						-moz-appearance: textfield
+
+	.filter-buttons
+		display: flex
+		justify-content: space-between
+		padding-top: $pad
+		padding-left: $pad
+		padding-right: $pad
+
+		button
+			margin-right: $pad_4
+			&:last-child
+				margin-right: 0
+.mobile-ui
+	[data-gw="SmartTableFilter"]
+		input[type="search"]
+			margin-top: $pad_2
+
+		.input-label-inset
+			max-width: 33%
+	
+// }}}
+// {{{ property-table
+
+.property-table
+	> .property
+		margin-bottom: 10px
+		> .label
+			font-size: 11px
+			font-weight: bold
+			color: var(--primary)
+			margin-bottom: 3px
+		> .value
+			white-space: pre-wrap
+			font-weight: 500
+
+// }}}
+// {{{ photo-upload-box
+
+.photo-upload-box
+	position: relative
+	white-space: normal
+
+	.empty
+		width: 100%
+		height: 100%
+		min-height: 120px
+		+flex-center
+		display: inline-flex
+		font-weight: bold
+		color: white
+		background: #868F9C
+		padding: 30px
+
+	img
+		max-height: 100%
+		width: auto
+		display: block
+
+	.overlay
+		display: none
+
+	&:hover
+		.overlay
+			cursor: pointer
+			position: absolute
+			background: #000000aa
+			+flex-center
+			display: flex
+			width: 100%
+			height: 100%
+			top: 0
+			left: 0
+			--color: white
+
+// }}}
+// {{{ admin-dialog
+
+.admin-dialog-mask
+	position: fixed
+	top: 0
+	left: 0
+	bottom: 0
+	right: 0
+	background: rgba(0,0,0,0.4)
+	display: flex
+	align-items: center
+	justify-content: center
+
+	> .admin-dialog
+		padding: 1rem
+		background: var(--panel-bg)
+		border-radius: var(--border-radius)
+		box-shadow: var(--drop-shadow-lg)
+		width: auto
+		min-width: 33vw
+		max-width: 98vw
+		max-height: 90vh
+		overflow: auto
+
+		> .header
+			position: relative
+			display: flex
+			justify-content: space-between
+
+			> h1
+				padding: 10px 1rem 40px
+				margin: 0
+				font-size: 24px
+				text-align: left
+
+			> .center
+				&:empty
+					display: none
+
+			> .close
+				cursor: pointer
+				+size(40px)
+				padding: 5px
+				+flex-center
+
+				&:hover
+					--color: black
+
+		> .subtitle
+			margin-bottom: $pad_2
+				
+
+	&.fullscreen
+		> .admin-dialog
+			height: calc(100vh - 60px)
+			width: calc(100vw - 60px)
+			display: grid
+			grid-template-columns: minmax(0, 1fr)
+			grid-template-rows: auto minmax(0, 1fr) auto
+
+// }}}
+// {{{ card-switcher
+
+.card-switcher
+	// all but the first card are hidden
+	> :not(:first-child)
+		display: none !important
+
+// }}}
+// {{{ date-range-input
+
+.date-range-input
+	display: contents
+
+// }}}
+// {{{ Main.NotesDialog
+
+[data-gw="Main.NotesDialog"]
+	.comment-box
+		display: flex
+		flex-flow: column
+		align-items: flex-start
+
+		> textarea
+			flex: 1
+			width: 100%
+			min-height: 150px
+			margin-bottom: $pad
+
+		> .buttons
+			width: 100%
+			display: flex
+			justify-content: flex-end
+
+			> button
+				margin-left: $pad
+
+	.notes-list
+		padding-top: $pad
+		margin-top: $pad_2
+
+		> .note
+			background-color: var(--input-disabled-bg)
+			border-radius: var(--border-radius)
+			font-weight: var(--font-weight-bold)
+			font-size: var(--font-size-lg)
+			color: var(--body-fg)
+			padding: $pad
+
+			> .header
+				padding-bottom: $pad_1_2
+				margin-bottom: $pad_1_2
+				display: flex
+				border-bottom: 1px solid var(--border-default-color)
+				> .author
+					flex: 1
+			> .body
+				padding-top: $pad_1_2
+				white-space: pre-wrap
+		
+		& + .form-buttons
+			margin-bottom: 0
+		
+// }}}
+
+[data-format="doughnut"]
+	> canvas
+		vertical-align: middle
+		& + span
+			margin-left: $pad_1_2
+
+// vim: ts=8 sw=8 sts=8 noet:

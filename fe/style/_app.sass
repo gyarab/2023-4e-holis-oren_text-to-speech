@@ -1,0 +1,162 @@
+.notify-bar
+	position: fixed
+	display: inline-flex
+	align-items: center
+	overflow: hidden
+	min-height: 3rem
+	top: .7rem
+	border-radius: var(--border-radius)
+	font-size: var(--font-size-lg)
+	font-weight: var(--font-weight-bold)
+
+	.text
+		flex: 1
+		text-align: center
+		max-width: calc(70vw)
+		padding: 4px 15px
+		line-height: 1.5
+		font-weight: 500
+
+		strong, b
+			font-weight: bold
+
+	.status-icon
+		margin-left: 20px
+		border-radius: 50px
+		+size(24px)
+		+flex-center
+		background: white
+		> .icon
+			+size(16px)
+	.pad
+		width: 20px
+		height: 1px
+		display: inline-block
+
+	a.close
+		line-height: 1
+		margin: 0 10px
+		padding: 10px
+		text-decoration: none
+		font-size: 18px
+
+		+mobile-ui
+			padding: 15px
+
+	a:not(.close)
+		font-weight: bold
+		text-decoration: underline
+		cursor: pointer
+
+		&:hover
+			text-decoration: none
+
+	&[data-kind=error]
+		background: var(--error)
+		&, a
+			color: var(--error-text)
+
+	&[data-kind=info]
+		background: var(--info)
+		&, a
+			color: var(--info-text)
+
+	&[data-kind=success]
+		background: var(--success)
+		&, a
+			color: var(--success-text)
+		.status-icon
+			--color: var(--success)
+
+	&[data-kind=warning]
+		background: var(--warning)
+		&, a
+			color: var(--warning-text)
+
+.mask-overlay
+	position: fixed
+	top: 0
+	bottom: 0
+	left: 0
+	right: 0
+	z-index: 2000
+	display: flex
+	flex-direction: column
+	align-items: center
+	justify-content: center
+	background: var(--overlay-mask-color)
+
+	> .pad-top
+		flex: 1
+	> .pad-bottom
+		flex: 6
+
+.mobile-mask-overlay
+	position: fixed
+	top: 0
+	bottom: 0
+	left: 0
+	right: 0
+	z-index: 2000
+	display: flex
+	background: var(--overlay-mask-color)
+
+	&.align-left
+		flex-direction:	row
+		align-items: stretch
+		justify-content: flex-start
+
+		> *
+			height: 100%
+			border-top-left-radius: 0 !important
+			border-bottom-left-radius: 0 !important
+			max-width: calc(100% - 75px)
+			overflow: auto
+			position: relative
+
+	&.align-bottom
+		flex-direction: column
+		align-items: stretch
+		justify-content: flex-end
+
+		> *
+			width: auto !important
+			border-bottom-right-radius: 0 !important
+			border-bottom-left-radius: 0 !important
+			max-height: calc(100% - 75px)
+			overflow: auto
+			position: relative
+
+	&.align-fullscreen
+		flex-direction: column
+		align-items: stretch
+		justify-content: flex-end
+
+		> *
+			width: auto !important
+			border-radius: 0 !important
+			overflow: auto
+			position: relative
+			flex: 1 0 auto
+			min-height: 0
+	
+	.popup-button-close
+		display: block
+		width: 2rem
+		height: 2rem
+		border: none
+		padding: 0
+		font-size: 0
+		margin-left: auto
+		position: absolute
+		z-index: 1
+		top: $pad
+		right: $pad
+		background-color: transparent
+		background-repeat: no-repeat
+		background-size: 1.75rem 1.75rem
+		background-position: center
+		background-image: url(../icons/close.svg)
+		cursor: pointer
+
+// vim: ts=8 sw=8 sts=8 noet:

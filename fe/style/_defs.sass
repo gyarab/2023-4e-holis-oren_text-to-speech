@@ -1,0 +1,397 @@
+/////////////////
+// Foundations //
+/////////////////
+
+// Fonts
+$font-face: 'Manrope' !default
+$font-format: 'woff2' !default
+$font-srcs: ( 400: '../fonts/manrope-v4-latin-ext_latin_cyrillic-regular.woff2', 600: '../fonts/manrope-v4-latin-ext_latin_cyrillic-600.woff2', 800: '../fonts/manrope-v4-latin-ext_latin_cyrillic-800.woff2' ) !default
+
+$font-weight-normal: 400 !default
+$font-weight-bold: 600 !default
+$font-weight-bolder: 800 !default
+
+// Breakpoints
+$breakpoints: (	'xs': 320px, 'sm': 576px, 'md': 768px, 'lg': 992px, 'xl': 1280px, 'xxl': 1920px ) !default
+
+// Color palette
+
+// --- CSSGen Export begin --- //
+
+$color-blue-900: #04123b !default
+$color-blue-850: #0B215C !default
+$color-blue-800: #143284 !default
+$color-blue-750: #2049B8 !default
+$color-blue-700: #3564ef !default
+$color-blue-600: #6f86f4 !default
+$color-blue-500: #95a3f7 !default
+$color-blue-400: #aab5f8 !default
+$color-blue-300: #bbc3fa !default
+$color-blue-200: #dadefc !default
+$color-blue-100: #f2f3fe !default
+$color-blue-50: #f8f9fe !default
+$color-grey-900: #141619 !default
+$color-grey-850: #23262b !default
+$color-grey-800: #363941 !default
+$color-grey-750: #4E525D !default
+$color-grey-700: #69707e !default
+$color-grey-600: #868ea0 !default
+$color-grey-500: #a3a9b6 !default
+$color-grey-400: #b4b9c4 !default
+$color-grey-300: #c3c6cf !default
+$color-grey-200: #dedfe4 !default
+$color-grey-100: #f3f3f5 !default
+$color-grey-50: #f9f9fa !default
+$color-green-900: #051a0c !default
+$color-green-850: #002D14 !default
+$color-green-800: #154127 !default
+$color-green-750: #005F32 !default
+$color-green-700: #008145 !default
+$color-green-600: #00a35a !default
+$color-green-500: #35bf73 !default
+$color-green-400: #3bd17e !default
+$color-green-300: #5ade90 !default
+$color-green-200: #93f4b5 !default
+$color-green-100: #d7fde2 !default
+$color-green-50: #ebfef1 !default
+$color-orange-900: #290e00 !default
+$color-orange-800: #602900 !default
+$color-orange-700: #b45400 !default
+$color-orange-600: #e36b00 !default
+$color-orange-500: #ff8849 !default
+$color-orange-400: #ffa17d !default
+$color-orange-300: #ffb59c !default
+$color-orange-200: #ffd7cc !default
+$color-orange-100: #fff1ed !default
+$color-orange-50: #fff8f6 !default
+$color-red-900: #310505 !default
+$color-red-850: #4E0B0C !default
+$color-red-800: #711516 !default
+$color-red-750: #9E2123 !default
+$color-red-700: #d23031 !default
+$color-red-600: #ef5d5e !default
+$color-red-500: #f18c8c !default
+$color-red-400: #f3a4a4 !default
+$color-red-300: #f5b7b7 !default
+$color-red-200: #f9d8d8 !default
+$color-red-100: #fdf1f1 !default
+$color-red-50: #fef8f8 !default
+
+$color-white: #ffffff !default
+$color-black: $color-blue-900 !default
+
+// --- CSSGen Export end --- //
+
+$primary: $color-blue-700 !default
+$primary-hover: $color-blue-800 !default
+$primary-active: $color-blue-900 !default
+$primary-disabled: $color-grey-300 !default
+$primary-text: $color-white !default
+$primary-hover-text: $color-white !default
+$primary-active-text: $color-white !default
+$primary-disabled-text: $color-white !default
+
+$secondary: $color-white !default
+$secondary-hover: $color-blue-100 !default
+$secondary-active: $color-blue-200 !default
+$secondary-disabled: $color-grey-200 !default
+$secondary-text: var(--primary) !default
+$secondary-hover-text: var(--primary) !default
+$secondary-active-text: var(--primary-hover) !default
+$secondary-disabled-text: $color-white !default
+
+$success: $color-green-600 !default
+$success-hover: $color-green-700 !default
+$success-active: $color-green-800 !default
+$success-disabled: $color-grey-300 !default
+$success-text: $color-white !default
+$success-hover-text: $color-white !default
+$success-active-text: $color-white !default
+$success-disabled-text: $color-white !default
+
+
+$success-secondary: $secondary !default
+$success-secondary-hover: $color-green-100 !default
+$success-secondary-active: $color-green-200 !default
+$success-secondary-disabled: $secondary-disabled !default
+$success-secondary-text: $success !default
+$success-secondary-hover-text: $success !default
+$success-secondary-active-text: $success-hover !default
+$success-secondary-disabled-text: $secondary-disabled-text !default
+
+
+$error: $color-red-700 !default
+$error-hover: $color-red-800 !default
+$error-active: $color-red-900 !default
+$error-disabled: $color-grey-300 !default
+$error-text: $color-white !default
+$error-hover-text: $color-white !default
+$error-active-text: $color-white !default
+$error-disabled-text: $color-white !default
+
+
+$error-secondary: $secondary !default
+$error-secondary-hover: $color-red-100 !default
+$error-secondary-active: $color-red-200 !default
+$error-secondary-disabled: $secondary-disabled !default
+$error-secondary-text: $error !default
+$error-secondary-hover-text: $error !default
+$error-secondary-active-text: $error-hover !default
+$error-secondary-disabled-text: $secondary-disabled-text !default
+
+$warning-secondary-hover: $color-orange-200 !default
+$warning-secondary-hover-text: $color-orange-700 !default
+$warning-secondary-border-hover: $warning-secondary-hover !default
+
+// Other States
+
+$info: $color-blue-700 !default
+$info-text: $color-white !default
+$info-light: $color-blue-50 !default
+$success-light: $color-green-50 !default
+$warning: $color-orange-600 !default
+$warning-hover: $color-orange-700 !default
+$warning-text: $color-white !default
+$warning-light: $color-orange-100 !default
+$error-light: $color-red-100 !default
+
+
+// Border radius
+
+$border-radius-lg: 0.75rem !default // 12px
+$border-radius: .5rem !default // 8px
+$border-radius-sm: .3125rem !default // 5px
+$border-radius-xs: .25rem !default // 4px
+
+$border-default-color: $color-grey-200 !default
+$border-default-width: 1px !default
+
+// Drop Shadow
+$drop-shadow-hardness: 0.15 !default
+$drop-shadow-lg: 0px 20px 40px rgba(0, 0, 0, var(--drop-shadow-hardness)) !default
+$drop-shadow: 0px 7px 20px rgba(0, 0, 0, var(--drop-shadow-hardness)) !default
+$drop-shadow-sm: 0px 2px 4px rgba(0, 0, 0, var(--drop-shadow-hardness)) !default
+
+// Transitions
+$transition-time-long: .5s !default
+$transition-time: .3s !default
+$transition-time-short: .2s !default
+
+// Typography
+
+$display-1: 4.75rem !default
+$display-2: 4.25rem !default
+$display-3: 3.75rem !default
+$display-4: 3.375rem !default
+$display-5: 3rem !default
+$display-6: 2.625rem !default
+
+$heading-1: 2.625rem !default       // 42px
+$heading-2: 2.25rem !default        // 36px
+$heading-3: 1.75rem !default        // 28px
+$heading-4: 1.5rem !default         // 24px
+$heading-5: 1.25rem !default        // 20px
+$heading-6: 1rem !default           // 16px
+
+$font-size-xl: 1.125rem !default    // 18px
+$font-size-lg: 1rem !default        // 16px
+$font-size-base: .875rem !default   // 14px
+$font-size-sm: .75rem !default      // 12px
+$font-size-xs: .625rem !default     // 10px
+
+$display-1-mobile: 2.25rem !default
+$display-2-mobile: 2rem !default
+$display-3-mobile: 1.75rem !default
+$display-4-mobile: 1.5rem !default
+$display-5-mobile: 1.25rem !default
+$display-6-mobile: 1.125rem !default
+
+$heading-1-mobile: 2rem !default
+$heading-2-mobile: 1.75rem !default
+$heading-3-mobile: 1.5rem !default
+$heading-4-mobile: 1.25rem !default
+$heading-5-mobile: 1.125rem !default
+$heading-6-mobile: #{$heading-6} !default
+
+$font-size-xl-mobile: 1rem !default
+$font-size-lg-mobile: #{$font-size-lg} !default
+$font-size-base-mobile: #{$font-size-base} !default
+$font-size-sm-mobile: #{$font-size-sm} !default
+$font-size-xs-mobile: #{$font-size-xs} !default
+
+
+/////////////////////
+// Common Elements //
+/////////////////////
+
+// Body
+$body-bg: $color-grey-100 !default
+$body-fg: $color-black !default
+$body-line-height: 1.3125 !default
+$body-padding: 1.75rem !default
+$body-padding-mobile: 1.25rem !default
+
+// Anchor
+
+$anchor-color: $color-black !default
+
+// Buttons
+
+$button-border-width: 1px !default
+$button-font-weight: $font-weight-bolder !default
+$button-line-height: 1.14375 !default
+
+$button-text: $font-size-lg !default
+$button-text-xs: $font-size-sm !default
+$button-text-sm: $font-size-base !default
+$button-text-lg: $font-size-xl !default
+
+$button-padding-y: .5rem !default
+$button-padding-x: 1rem !default
+$button-padding-y-xs: .25rem !default
+$button-padding-x-xs: .75rem !default
+$button-padding-y-sm: .375rem !default
+$button-padding-x-sm: .875rem !default
+$button-padding-y-lg: .7rem !default
+$button-padding-x-lg: 1.125rem !default
+
+// Forms
+
+$input-border-width: 1px !default
+$input-border-color: $color-grey-300 !default
+$input-border-color-hover: $color-grey-400 !default
+$input-border-width-focus: 2px !default
+$input-border-color-focus: var(--primary) !default
+$input-disabled-bg: transparent !default
+$input-disabled-fg: $color-grey-300 !default
+$input-placeholder: $color-grey-700 !default
+$input-placeholder-hover: $color-grey-500 !default
+$input-long-width: 260px !default
+$input-height: 2.5rem !default
+$input-height-xs: 1.625rem !default
+$input-height-sm: 2rem !default
+$input-height-lg: 3rem !default
+$input-checkbox-color: $color-grey-600 !default
+$input-checkbox-checked-color: var(--primary-hover) !default
+$input-checkbox-checked-hover-color: var(--primary) !default
+$input-bg: transparent !default
+$input-fg: var(--body-fg) !default
+$input-select-arrow: url(../icons/arrow-simple-down.svg) !default
+$input-select-arrow-light: url(../icons/arrow-simple-down-white.svg) !default
+
+
+// Table
+
+$table-padding-y: .625rem !default
+$table-padding-x: .75rem !default
+$table-row-min-height: 3.25rem !default
+$table-bg: var(--panel-bg) !default
+$table-alternation-bg: $color-grey-50 !default
+$table-alternation-success-bg: var(--success-light) !default
+$table-alternation-warning-bg: var(--warning-light) !default
+$table-muted-color: $color-grey-700 !default
+$table-row-hover-bg: var(--table-alternation-bg) !default
+$table-row-hover-fg: var(--body-fg) !default
+$table-row-selected-bg: $color-blue-100 !default
+$table-row-selected-fg: var(--primary-hover) !default
+$table-highlight-border: $color-blue-400 !default
+$table-highlight-bg: rgba(53, 100, 239, 0.04) !default
+$table-border-radius: $border-radius !default
+
+
+// Dropdown
+$dropdown-shadow: var(--drop-shadow) !default
+$dropdown-radius: $border-radius-sm !default
+$dropdown-bg: $color-white !default
+$dropdown-fg: $color-black !default
+$dropdown-bg-hover: $table-row-selected-bg !default
+$dropdown-fg-hover: var(--primary) !default
+$dropdown-font-size: $font-size-base !default
+$dropdown-font-weight: $font-weight-bold !default
+
+
+// Content Switcher
+
+$button-switcher-fg: $color-grey-700 !default
+$button-switcher-bg: $color-grey-100 !default
+$button-switcher-hover-fg: var(--primary) !default
+$button-switcher-focus-fg: var(--primary-hover) !default
+$button-switcher-active-fg: $color-white !default
+$button-switcher-active-bg: $color-blue-900 !default
+$button-switcher-disabled-fg: $color-grey-300 !default
+$button-switcher-disabled-bg: $color-grey-100 !default
+$button-switcher-disabled-active-fg: $color-white !default
+$button-switcher-disabled-active-bg: $color-grey-300 !default
+$button-switcher-light-fg: $color-grey-800 !default
+$button-switcher-light-bg: $color-white !default
+
+
+// Tab Switcher
+$tab-switcher-border-width: var(--border-default-width) !default
+$tab-switcher-border-color: var(--border-default-color) !default
+$tab-switcher-item-fg: $color-grey-800 !default
+$tab-switcher-item-hover: var(--primary) !default
+$tab-switcher-item-padding-y: 1rem !default
+$tab-switcher-item-margin-x: .875rem !default
+$tab-switcher-item-selected-fg: var(--primary) !default
+$tab-switcher-item-selected-border-color: var(--primary) !default
+$tab-switcher-item-selected-border-width: 2px !default
+
+
+// Panel
+$panel-bg: $color-white !default
+$panel-fg: $color-black !default
+$panel-padding: 1.25rem !default
+$panel-shadow: var(--drop-shadow-sm) !default
+$panel-shadow-hover: var(--drop-shadow-lg) !default
+
+// Top Navigation Header
+$nav-header-bg: var(--primary-hover) !default
+$nav-header-fg: $color-white !default
+
+// Registration
+$reg-ok-fg: $success-hover !default
+$reg-fail-fg: $error !default
+
+// Module Chooser
+$module-chooser-bg: var(--panel-bg) !default
+$module-chooser-contrast: var(--panel-bg) !default
+$module-chooser-main: var(--primary) !default
+$module-chooser-hover: $color-blue-100 !default
+$module-chooser-radius: $border-radius-sm !default
+$module-chooser-offset: .5rem !default
+$module-chooser-min-height: 7rem !default
+$module-chooser-min-height-mobile: 6.25rem !default
+
+// Graphs
+$graph-success-color: $success !default
+$graph-error-color: $error !default
+$graph-border-color: var(--panel-bg) !default
+
+// Upload
+$file-upload-box-border: 2px dashed $color-grey-200 !default
+
+// Icons
+$icon-static-color: $color-grey-600 !default
+$icon-hover-color: var(--primary) !default
+$icon-active-color: var(--primary-hover) !default
+$icon-disabled-color: var(--primary-disabled) !default
+$icon-selected-static-color: var(--primary) !default
+$icon-selected-hover-color: var(--primary-hover) !default
+$icon-selected-active-color: var(--primary-active) !default
+
+// Illustrations
+$illustration-filter: none !default
+
+// Components
+$dialer-width-default: 360px !default
+
+// typing var(--pad...) everywhere is annoying, this makes it
+// a bit less verbose
+$pad: var(--pad)
+$pad_2: var(--pad-2)
+$pad_4: var(--pad-4)
+$pad_1_2: var(--pad-1-2)
+$pad_1_4: var(--pad-1-4)
+
+// vim: ts=8 sw=8 sts=8 noet:

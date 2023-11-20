@@ -1,0 +1,1009 @@
+[data-gw="Office.OfficePanel"],
+[data-gw="Office.AgentPanel"]
+	> .body
+		max-height: calc(100vh - 70px)
+		padding: var(--body-padding)
+		display: flex
+		flex-wrap: wrap
+		align-items: flex-start
+		+breakpoint('<md')
+			padding-left: 0
+			padding-right: 0
+			padding-bottom: 0
+		+breakpoint('>md')
+			flex-direction: column
+			flex-wrap: nowrap
+		+breakpoint('>lg')
+			flex-direction: row
+
+[data-gw="Office.AgentPanel"]
+	grid-template-columns: minmax(0, 1fr)
+	grid-template-rows: auto auto minmax(0, 1fr) auto
+	grid-template-areas: 'header' 'queue' 'body' 'footer'
+
+	> .queue-control-panel
+		grid-area: queue
+		margin-top: var(--body-padding)
+
+.queue-control-panel
+	display: flex
+
+	> .queue-list
+		$margin-offset: 3px
+		display: flex
+		overflow-x: auto
+		flex: 1 0
+		padding: $margin-offset
+		margin: -#{$margin-offset}
+
+		+breakpoint('>md')
+			+ .controls
+				position: relative
+				&::before
+					content: ""
+					display: block
+					position: absolute
+					right: calc(100% - #{$margin-offset})
+					width: $pad
+					height: 100%
+					background: linear-gradient(to right, #{$body-bg}#{'00'}, var(--body-bg))
+		
+		> .empty
+			display: flex
+			align-items: center
+			justify-content: center
+			width: 100%
+			min-height: 72px
+			font-weight: var(--font-weight-bolder)
+			color: var(--table-muted-color)
+
+		> .queue
+			padding: 1rem
+			border-radius: var(--panel-border-radius)
+			border: 0
+			display: flex
+			align-items: center
+			background: var(--panel-bg)
+			box-shadow: var(--panel-shadow)
+			+breakpoint('>md')
+				min-width: 180px
+				max-width: 240px
+			cursor: pointer
+			font-size: var(--font-size-lg)
+			flex-shrink: 0
+			&:not(:last-child)
+				margin-right: $pad
+			&:last-child
+				margin-right: $pad_1_2
+
+			> .status
+				+mask-icon-with-color('phone-incoming-filled', var(--panel-bg), (20/24))
+				+size(40px)
+				flex-shrink: 0
+				background-color: var(--success)
+				border-radius: 100px
+
+			> .info
+				margin-left: 20px
+				text-align: left
+				color: var(--panel-fg)
+				display: flex
+				flex-direction: column
+				overflow: hidden
+				> .name
+					font-weight: var(--font-weight-bolder)
+					font-size: var(--font-size-lg)
+					overflow: hidden
+					text-overflow: ellipsis
+					white-space: nowrap
+				> .number
+					font-weight: var(--font-weight-normal)
+					font-size: var(--font-size-base)
+				&.no-name
+					> .name
+						display: none
+					> .number
+						font-weight: var(--font-weight-bolder)
+						font-size: var(--font-size-lg)
+
+			&[data-status="subscribed"]
+				> .status
+					background-color: var(--success)
+			&[data-status="unsubscribed"]
+				> .status
+					background-color: var(--input-disabled-fg)
+			&[data-status="paused"]
+				> .status
+					background-color: var(--warning)
+
+	> .controls
+		display: flex
+
+		> .more
+			align-self: center
+			margin-left: $pad_1_2
+
+		> .pause
+			margin-left: $pad
+			display: flex
+			align-items: center
+			padding: 1rem
+			border: 0
+			border-radius: var(--border-radius)
+			box-shadow: var(--panel-shadow)
+			cursor: pointer
+			&:disabled
+				cursor: not-allowed
+
+			.icon-wrap
+				margin-right: 1.25rem
+				border-radius: 100px
+				+size(40px)
+				+flex-center
+			
+			.text
+				font-size: var(--font-size-lg)
+				font-weight: var(--font-weight-bolder)
+
+			&[data-state="paused"]
+				background-color: var(--warning)
+				--color: var(--panel-bg)
+				color: var(--panel-bg)
+				.icon-wrap
+					background-color: var(--panel-bg)
+					> .icon
+						color: var(--warning)
+						--color: var(--warning)
+
+			&[data-state="not-paused"]
+				background-color: var(--panel-bg)
+				color: var(--body-fg)
+
+				.icon-wrap
+					background-color: var(--warning-light)
+					> .icon
+						color: var(--warning)
+						--color: var(--warning)
+			&:disabled
+				background-color: var(--panel-bg)
+				color: var(--input-placeholder-hover)
+				.icon-wrap
+					background-color: var(--input-disabled-fg)
+					> .icon
+						color: var(--panel-bg)
+						--color: var(--panel-bg)
+
+	+breakpoint('<md')
+		flex-flow: column
+
+		> .queue-list
+			display: block
+			overflow: visible
+			order: 2
+
+			> .queue
+				width: 100%
+				background: var(--input-disabled-bg)
+				border: 1px solid var(--input-disabled-fg)
+				&:not(:last-child)
+					margin-bottom: $pad
+
+		> .controls
+			margin-bottom: $pad
+			> .pause
+				margin-left: 0
+				flex: 1
+				border: 1px solid var(--input-disabled-fg)
+			> .more
+				order: 2
+
+[data-gw="Office.DialerInput"]
+	display: flex
+	align-items: center
+	border: var(--input-border-width) solid var(--input-border-color)
+	border-radius: var(--border-radius)
+	max-width: 100%
+	transition: border-color var(--transition-time-short)
+
+	&:hover
+		border-color: var(--input-border-color-hover)
+
+	> input:not([type="checkbox"]):not([type="radio"])
+		margin-top: -1px
+		margin-bottom: -1px
+		margin-left: -1px
+		margin-right: -1px
+		flex: 1
+		border: 0
+		min-width: 0
+
+		&:focus
+			padding-left: 16px
+			padding-right: 16px
+
+	&:focus-within
+		border: var(--input-border-width-focus) solid var(--input-border-color-focus)
+
+		> input:not([type="checkbox"]):not([type="radio"])
+			margin-top: -2px
+			margin-bottom: -2px
+			margin-left: -2px
+			margin-right: -2px
+
+		> .controls
+			margin-right: 2px
+			> *
+				box-shadow: none
+
+	&.disabled		
+		background-color: var(--body-bg)
+		border-color: var(--body-bg)
+		> input:not([type="checkbox"]):not([type="radio"])
+			color: var(--input-disabled-fg)
+			&::placeholder
+				color: var(--input-disabled-fg)
+
+	> .controls
+		display: flex
+		align-items: center
+		justify-content: flex-end
+		margin-right: 3px
+		min-width: 0
+
+		> :not(:first-child)
+			margin-left: 4px
+
+		> *
+			display: flex
+
+	> .status-icon
+		padding: 0 6px
+		display: flex
+		align-items: center
+
+.dialer-input-suggestions
+	background: var(--dropdown-bg)
+	box-shadow: var(--dropdown-shadow)
+	border-radius: var(--dropdown-radius)
+	overflow: auto
+	max-height: 27.125rem
+	padding-top: .5rem
+	padding-bottom: .5rem
+	font-size: var(--dropdown-font-size)
+
+	.title
+		color: var(--table-muted-color)
+		font-weight: var(--font-weight-bold)
+		padding: $pad 1rem
+
+	.suggestion
+		padding: .375rem 1rem
+		border-bottom: var(--border-default-width) solid var(--border-default-color)
+		display: block
+		text-decoration: none
+		&:last-child
+			border-bottom: none
+
+		> .number
+			font-weight: var(--font-weight-bolder)
+			line-height: 1.6
+			overflow: hidden
+			text-overflow: ellipsis
+			white-space: nowrap
+		> .info
+			font-weight: var(--font-weight-bold)
+			color: var(--table-muted-color)
+			overflow: hidden
+			text-overflow: ellipsis
+			white-space: nowrap
+
+		&.selected,
+		&:hover
+			color: var(--dropdown-fg-hover)
+			background: var(--dropdown-bg-hover)
+			> .info
+				color: var(--dropdown-fg-hover)
+
+[data-gw="Office.CallControl"]
+	margin-top: $pad_2
+	padding: $pad 1rem 1rem
+	border: var(--input-border-width-focus) solid var(--border-default-color)
+	border-radius: var(--border-radius)
+	box-shadow: var(--drop-shadow)
+	display: grid
+	grid-template-columns: minmax(0, 1fr) auto
+	grid-template-rows: auto
+	grid-template-areas: 'status timer' 'peer controls' 'forward forward'
+
+	&[data-status="incomming"],
+	&[data-status="dialing"]
+		border-color: var(--info)
+
+	&[data-status="connected"]
+		border-color: var(--success)
+
+	> .status
+		grid-area: status
+		font-size: var(--font-size-base)
+		font-weight: var(--font-weight-bold)
+		color: var(--table-muted-color)
+		margin-bottom: .5rem
+		display: flex
+		align-items: center
+
+		> .icon
+			margin-left: 4px
+			color: var(--info)
+
+	> .timer
+		grid-area: timer
+		text-align: right
+		font-size: var(--font-size-base)
+		font-weight: var(--font-weight-bold)
+		color: var(--table-muted-color)
+		min-width: 54px
+		max-width: 54px
+		margin-left: auto
+
+	> .peer
+		grid-area: peer
+		> .number
+			font-size: var(--font-size-xl)
+			font-weight: var(--font-weight-bolder)
+			line-height: 1.6
+			overflow: hidden
+			text-overflow: ellipsis
+			white-space: nowrap
+		> .contact
+			font-size: var(--font-size-base)
+			font-weight: var(--font-weight-bold)
+			overflow: hidden
+			text-overflow: ellipsis
+			white-space: nowrap
+		> .queue
+			border-radius: var(--border-radius)
+			display: inline-block
+			padding: 3px 7px
+			background: $color-blue-900
+			color: white
+			margin-top: 3px
+
+	> .controls
+		grid-area: controls
+		display: flex
+		align-items: center
+		justify-content: flex-end
+
+		> .buttons
+			> *:focus
+				box-shadow: none
+
+			> *
+				margin-left: .5rem
+
+		> .status-icon
+			display: flex
+			align-items: center
+			justify-content: center
+			margin-left: .5rem
+			margin-right: .5rem
+
+			> .icon
+				+size(20px)
+
+	> [data-gw="Office.DialerInput"]
+		grid-area: forward
+		margin-top: 1rem
+
+	+ .waiting-calls
+		margin-top: $pad_2
+		font-size: var(--font-size-base)
+		.title
+			color: var(--table-muted-color)
+			font-weight: var(--font-weight-bold)
+		.list
+			.call
+				padding: $pad 0
+				border-bottom: var(--border-default-width) solid var(--border-default-color)
+				&:last-child
+					border-bottom: none
+					padding-bottom: 0
+				> .header
+					display: flex
+					align-items: center
+					justify-content: space-between
+
+					> .number
+						font-weight: var(--font-weight-bolder)
+						line-height: 1.6
+						overflow: hidden
+						text-overflow: ellipsis
+						white-space: nowrap
+
+					> .timer
+						font-weight: var(--font-weight-bold)
+						color: var(--table-muted-color)
+
+				> .info
+					font-weight: var(--font-weight-bold)
+					overflow: hidden
+					text-overflow: ellipsis
+					white-space: nowrap
+					padding-right: 3rem
+
+				> .queue
+					border-radius: var(--border-radius)
+					display: inline-block
+					padding: 3px 7px
+					background: $color-blue-900
+					color: white
+					margin-top: 3px
+
+.waiting-queues
+	min-height: 0
+	display: flex
+	flex-direction: column
+	border-top: var(--border-default-width) solid var(--border-default-color)
+	padding-top: $pad !important
+
+	+breakpoint('>md')
+		border-top: 0
+		flex-grow: 1
+		padding-top: var(--panel-padding) !important
+	+breakpoint('>lg')
+		flex-grow: 0
+
+	> h4
+		font-size: var(--font-size-base)
+		font-weight: var(--font-weight-bold)
+		color: var(--table-muted-color)
+		margin-bottom: $pad
+		
+	.call-list
+		overflow: auto
+		max-height: 100%
+		height: 100%
+		display: flex
+		flex-direction: column
+
+		.queue-empty
+			text-align: center
+			font-size: var(--font-size-base)
+			font-weight: var(--font-weight-bolder)
+			margin-bottom: 1rem
+			margin-top: 1rem
+			+breakpoint('>md')
+				margin-top: auto
+				margin-bottom: auto
+			+breakpoint('>lg')
+				margin-top: 2rem
+				margin-bottom: 1rem
+		
+		.call
+			font-size: var(--font-size-base)
+			display: flex
+			flex-direction: column
+			align-items: flex-start
+			position: relative
+			.number
+				font-weight: var(--font-weight-bolder)
+				color: var(--body-fg)
+				margin-bottom: 1px
+			.contact
+				font-weight: var(--font-weight-bold)
+			.queue
+				margin-top: 4px
+				display: inline-block
+				background-color: var(--button-switcher-active-bg)
+				color: var(--button-switcher-active-fg)
+				border-radius: var(--border-radius-sm)
+				font-size: var(--font-size-sm)
+				font-weight: var(--font-weight-bold)
+				line-height: 1
+				padding: $pad_1_4 $pad_1_2
+			.queue-join-timer
+				color: var(--table-muted-color)
+				white-space: nowrap
+				position: absolute
+				right: 0
+
+			&:not(:last-child)
+				border-bottom: var(--border-default-width) solid var(--border-default-color)
+				padding-bottom: $pad
+				margin-bottom: $pad
+
+.office-dialer,
+.waiting-queues
+	width: 100%
+	+breakpoint('>md')
+		margin-bottom: var(--body-padding)
+		width: var(--dialer-width-default)
+	+breakpoint('>lg')
+		margin-bottom: 0
+
+.office-dialer
+	overflow: auto
+	flex-shrink: 0
+	+breakpoint('>md')
+		margin-right: var(--body-padding)
+
+[data-gw="Office.AgentDialer"]
+	width: 100%
+	display: flex
+	flex-direction: column
+	// height: 100%
+
+	+breakpoint('>md')
+		flex-direction: row
+		max-height: 50%
+		// max-height: calc(50vh - ( 70px + 2 * var(--body-padding) ))
+
+	+breakpoint('>lg')
+		width: auto
+		height: 100%
+		max-height: 100%
+		flex-direction: column
+		flex-shrink: 0
+
+	> .office-dialer
+		margin-bottom: var(--body-padding)
+	
+.office-dialer
+	> .dialer-header
+		display: flex
+		align-items: center
+		margin-bottom: $pad_2
+
+		.extension-status
+			.icon
+				display: block
+				+size(8px)
+			&[data-status="ok"]
+				--color: var(--success)
+			&[data-status="fail"]
+				--color: var(--error)
+			&[data-status="none"]
+				//XXX: choose color
+				--color: #bbb
+
+		.extension
+			font-size: var(--font-size-lg)
+			font-weight: var(--font-weight-bolder)
+			padding-left: .25rem
+			flex: 1
+
+	> .device-status
+		padding: $pad
+		border-radius: var(--border-radius)
+		background-color: var(--error)
+		color: var(--error-text)
+		line-height: 1.5
+		margin-bottom: $pad_2
+
+
+[data-gw="Office.ControlPanel"],
+[data-gw="Office.HistoryPanel"],
+[data-gw="Office.AgentHistoryPanel"],
+[data-gw="Office.AgentOutboundPanel"],
+[data-gw="Office.AgentCallbackPanel"],
+[data-gw="Office.DirectoryPanel"],
+[data-gw="Supervisor.CallbacksScreen"],
+[data-gw="Supervisor.QueuesScreen"],
+[data-gw="Supervisor.QueuesHistoryScreen"],
+[data-gw="Supervisor.OverviewScreen"]
+	display: flex
+	flex-direction: column
+	flex-grow: 1
+	max-width: 100%
+	min-width: 0
+	min-height: 0
+	max-height: 100%
+
+	.card-switcher
+		display: flex
+		flex-direction: column
+		flex-grow: 1
+		min-height: 65%
+		overflow: auto
+
+[data-gw="Office.ControlPanel"]
+	align-self: stretch
+	+breakpoint('<md')
+		.office-dialer,
+		.waiting-queues
+			box-shadow: none
+			padding: 0
+			border-radius: 0
+	+breakpoint('>lg')
+		width: auto
+
++breakpoint('<md')
+	[data-gw="Office.HistoryPanel"]
+		> .button-switcher
+			.item
+				width: 100%
+
+[data-gw="Office.DirectoryPanel"]
+	.toolbar.wrap
+		display: flex
+		flex-wrap: wrap
+		justify-content: space-between
+		+breakpoint('>md')
+			flex-flow: row
+			flex-wrap: wrap
+		> .button-switcher
+			padding-bottom: $pad
+			+breakpoint('<md')
+				width: 100%
+				.item
+					width: 100%
+
+		> input[type="search"]
+			margin-bottom: $pad_1_2
+			width: var(--input-long-width)
+		+breakpoint('<md')
+			input[type="search"]
+				margin-top: $pad
+				width: 100%
+				max-width: 100%
+
+[data-gw="Office.CallList"]
+	overflow: auto
+	flex-grow: 1
+
+	.call
+		display: flex
+		align-items: center
+		min-height: var(--table-row-min-height)
+		padding: var(--table-padding-y) var(--table-padding-x)
+		min-width: 430px
+
+		&:nth-child(even)
+			background-color: var(--table-alternation-bg)
+
+		.arrow
+			min-width: 1rem
+			min-height: 1rem
+			+mask-icon-with-color('arrow-right', var(--icon-static-color), 0.6)
+			margin-left: $pad
+			margin-right: $pad
+
+		.time
+			font-size: var(--font-size-base)
+			color: var(--table-muted-color)
+			margin-left: auto
+			white-space: nowrap
+			padding-left: $pad
+			+ button
+				margin-left: $pad_2
+				+mask-icon-with-color('phone-filled', var(--success-text), (16/24))
+
+		.party
+			.number
+				font-size: var(--font-size-lg)
+				font-weight: var(--font-weight-bolder)
+			.name, .company, .group
+				font-size: var(--font-size-base)
+				font-weight: var(--font-weight-bold)
+
+			.name, .company
+				display: inline
+
+			.name:empty,
+			.company:empty,
+			.group:empty
+				display: none
+
+			.name:not(:empty) + .company:not(:empty)
+				&::before
+					content: ",\00a0" // \00a0 === &nbsp; in unicode notation
+					display: inline-block
+			.group
+				display: none
+
+		> .icon-wrapper
+			margin-right: $pad
+
+[data-gw="Office.ContactsList"]
+	min-height: 100%
+
+	td
+		white-space: nowrap
+		text-overflow: ellipsis
+		overflow: hidden
+
+	td[data-col="extension"]
+		min-width: 70px
+		max-width: 0
+
+	td[data-col="name"],
+	td[data-col="company"],
+	td[data-col="email"],
+	td[data-col="note"],
+		min-width: 100px
+		max-width: 200px
+		a
+			text-decoration: none
+
+	td[data-col="note"]
+		color: var(--table-muted-color)
+
+	td[data-col="ctl"]
+
+		[data-action="dial"]
+			+mask-icon-with-color('phone-filled', var(--success-text), (16/24))
+
+		[data-action="blind-transfer"]
+			+mask-icon-with-color('arrow-right', white, (16/24))
+
+		[data-action="attended-transfer"]
+			+mask-icon-with-color('fi-corner-up-right', white, (16/24))
+
+[data-gw="Office.AgentHistoryPanel"]
+	.smart-table
+		td[data-col="start"]
+			color: var(--table-muted-color)
+		button[data-action="dial"]
+			+mask-icon-with-color('phone-filled', var(--success-text), (16/24))
+
+[data-gw="Widgets.CardSwitcher"]
+	.toolbar
+		display: flex
+		flex-flow: column
+		> .toolbar-top
+			display: flex
+			justify-content: space-between
+			margin-bottom: $pad
+			& + .button-switcher
+				margin-bottom: $pad
+
+			.campaign-switcher
+				flex-shrink: 1
+				margin-right: $pad
+
+			.show-description-button
+				flex-shrink: 0
+				
+				+breakpoint('<md')
+					font-size: 0
+					padding-left: var(--button-padding-x-sm)
+					.icon
+						margin-right: 0
+
+	> .card-switcher > .empty
+		text-align: center
+		margin-top: $pad_2
+
+	&.no-campaign
+		> .description
+			display: none
+		> .toolbar
+			display: none
+
+[data-gw="Office.AgentSubscriptionWarningDialog"]
+	> .admin-dialog
+		width: auto
+		max-width: 520px
+
+		> .header
+			> h1
+				font-size: var(--heading-5)
+				text-align: left
+			> .close
+				top: -0.25rem
+				right: -1.5rem
+				> .icon
+					width: 30px
+					height: 30px
+
+		> .body
+			font-size: var(--font-size-xl)
+			p
+				margin-top: 0
+				margin-bottom: $pad
+		> .footer
+			text-align: right
+			margin: $pad_2 0 0
+			padding-top: $pad
+
+			button:not(:first-child)
+				margin-left: $pad_1_2
+
+[data-gw="Office.CallPanel"]
+	flex-grow: 1
+	display: flex
+	flex-direction: column
+	flex-wrap: nowrap
+
+	overflow: hidden
+
+	.button-switcher
+		margin-bottom: $pad_2
+
+	.card-switcher
+		& > div
+			flex-shrink: 1
+			display: flex
+			flex-direction: column
+			align-content: flex-start
+
+			overflow: hidden
+
+		.title
+			font-size: var(--heading-5)
+			font-weight: var(--font-weight-bolder)
+			margin-bottom: $pad_2
+
+		.note-item
+			border-radius: var(--border-radius)
+			background-color: var(--body-bg)
+			margin-bottom: $pad
+			padding: $pad
+			font-size: var(--font-size-base)
+			font-weight: var(--font-weight-bold)
+			flex-shrink: 0
+
+			&:last-child
+				margin-bottom: 0
+
+			.note-item-header
+				color: var(--table-muted-color)
+				display: flex
+				flex-wrap: nowrap
+				justify-content: space-between
+				border-bottom: var(--border-default-width) solid var(--border-default-color)
+				padding-bottom: $pad
+				margin-bottom: $pad
+	
+			.note-item-content
+				white-space: pre-line
+				word-break: break-word
+    
+		.incomming-container
+			display: flex
+			flex-direction: column
+			justify-content: center
+			align-items: center
+			flex-grow: 1
+
+		.contact-container
+			width: 100%
+			margin-bottom: $pad_2
+			background-color: var(--body-bg)
+			border-radius: var(--border-radius)
+			padding: $pad
+			display: flex
+			align-items: center
+			font-size: var(--font-size-base)
+			font-weight: var(--font-weight-bold)
+			.icon
+				+size(1rem)
+				color: var(--icon-static-color)
+				margin-right: $pad_1_2
+			&:empty
+				display: none
+		
+		.content-container
+			display: flex
+			flex-wrap: nowrap
+			flex-grow: 0
+			flex-shrink: 1
+
+			overflow: hidden
+
+		.note-container,
+		.history-container
+			width: 50%
+			flex-basis: 50%
+
+			display: flex
+			flex-direction: column
+			flex-wrap: nowrap
+			flex-shrink: 1
+			justify-content: flex-start
+			
+			overflow: auto
+
+			.note-list,
+			.history-list
+				overflow: auto
+				flex-shrink: 1
+				min-height: 100px
+
+		.note-container
+			padding-right: var(--panel-padding)
+
+			label
+				font-size: var(--font-size-base)
+				font-weight: var(--font-weight-bold)
+				margin-bottom: $pad_1_2
+				display: block
+			textarea
+				width: 100%
+				margin-bottom: $pad
+				font-size: var(--font-size-base)
+			button
+				width: 100%
+				margin-bottom: $pad_2
+			
+			.note-item-content
+				font-weight: var(--font-weight-bolder)
+			
+		.history-container
+			padding-left: var(--panel-padding)
+			border-left: var(--border-default-width) solid var(--border-default-color)
+
+			.history-list
+				.history-item
+					&:not(:last-child)
+						border-bottom: var(--border-default-width) solid var(--border-default-color)
+						margin-bottom: $pad_2
+						padding-bottom: $pad
+					.history-item-header
+						display: flex
+						align-items: center
+						margin-bottom: $pad
+						.history-item-header-icon
+							+size(2.25rem)
+							background-color: var(--secondary-hover)
+							color: var(--primary)
+							border-radius: 50%
+							flex-shrink: 0
+							display: flex
+							align-items: center
+							justify-content: center
+							margin-right: $pad
+							.icon
+								+size(1.25rem)
+						.history-item-header-info
+							display: flex
+							flex-direction: column
+							.history-item-header-datetime
+								font-size: var(--font-size-lg)
+								font-weight: var(--font-weight-bolder)
+							.history-item-header-queue
+								font-size: var(--font-size-base)
+								color: var(--table-muted-color)
+
+					.history-item-content
+						&:not(.expanded)
+							.note-item:first-child,
+								margin-bottom: 0
+
+						.expander
+							margin-top: $pad
+							font-size: var(--font-size-base)
+							font-weight: var(--font-weight-bolder)
+							cursor: pointer
+							.label
+								padding: $pad_1_2 $pad
+								position: relative
+								width: -moz-fit-content
+								width: fit-content
+								color: var(--primary)
+								margin-left: auto
+								margin-right: auto
+								user-select: none
+								+mask-icon-with-color('arrow-simple-down', var(--primary), (16/24))
+								&::before
+									right: -100%
+
+						&.expanded
+							.expander
+								.label
+									+mask-icon-with-color('arrow-simple-up', var(--primary), (16/24))
+									&::before
+										right: -100%
+
+					.history-item-content:not(.expanded)
+						.note-item:first-child
+							.note-item-content
+								overflow: hidden
+								display: -webkit-box
+								-webkit-line-clamp: 2
+								-webkit-box-orient: vertical
+
+						.note-item:not(:first-child)
+							display: none
+
+// vim: ts=8 sw=8 sts=8 noet:

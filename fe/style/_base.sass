@@ -1,0 +1,915 @@
+html, body
+	padding: 0
+	margin: 0
+	height: 100%
+	width: 100%
+	overflow: hidden
+	color: var(--body-fg)
+	background: var(--body-bg)
+	font-size: var(--font-size-lg)
+	line-height: var(--body-line-height)
+
+*
+	box-sizing: border-box
+
+// disable iOS FF dark mode
+html, iframe, img, video
+	-webkit-filter: unset !important
+
+body
+	overflow: auto
+
+/* DarkMode theme switch transitions */
+body, 
+.panel-container,
+.main-screen > .header,
+.queue-control-panel > .queue-list > .queue,
+.queue-control-panel > .controls > .pause
+	transition: background var(--theme-switch-transition), color var(--theme-switch-transition)
+
+.illustration
+	-webkit-filter: var(--illustration-filter) !important
+	filter: var(--illustration-filter) !important
+
+.page-centered-container
+	max-width: map-get($breakpoints, 'xxl')
+	width: 100%
+	padding-left: var(--body-padding)
+	padding-right: var(--body-padding)
+	transition: padding var(--transition-time-short)
+	margin-left: auto
+	margin-right: auto
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6
+	font-weight: var(--font-weight-bolder)
+	transition: all var(--transition-time)
+	&:first-child
+		margin-top: 0
+
+h1, .h1
+	font-size: var(--heading-1)
+h2, .h2
+	font-size: var(--heading-2)
+h3, .h3
+	font-size: var(--heading-3)
+h4, .h4
+	font-size: var(--heading-4)
+h5, .h5
+	font-size: var(--heading-5)
+h6, .h6
+	font-size: var(--heading-6)
+
+html, body, input, textarea, button, select
+	font-family: var(--font-face), sans-serif
+	-webkit-font-smoothing: antialiased
+
+input:not([type=checkbox]):not([type=radio]), textarea, select
+	-moz-appearance: none
+	-webkit-appearance: none
+	appearance: none
+	background-color: var(--input-bg)
+	color: var(--input-fg)
+	border: var(--input-border-width) solid var(--input-border-color)
+	border-radius: var(--border-radius)
+	padding: 7px 16px
+	font-size: var(--font-size-lg)
+	font-weight: var(--font-weight-bold)
+	line-height: 1.5
+	height: var(--input-height)
+	transition: border-color var(--transition-time-short), color var(--transition-time-short)
+
+	/* Webkit autofill styling "hack" via https://stackoverflow.com/a/68240841 */
+	&:-webkit-autofill,
+	&:-webkit-autofill:focus
+		transition: background-color 600000s 0s, color 600000s 0s
+
+	&::placeholder
+		color: var(--input-placeholder)
+		font-weight: var(--font-weight-normal)
+		width: min-content
+		max-width: 100%
+
+	&:hover
+		border-color: var(--input-border-color-hover)
+
+	&:focus
+		border: var(--input-border-width-focus) solid var(--input-border-color-focus)
+		padding: 6px 15px
+		outline: 0
+		&::placeholder
+			color: var(--input-placeholder-hover)
+	
+	&:hover::placeholder
+		color: var(--input-placeholder-hover)
+
+	&:invalid
+		outline: 0
+		box-shadow: none
+
+	&.small
+		font-size: var(--font-size-base)
+		padding: 4px 8px
+		height: var(--input-height-sm)
+		&:focus
+			padding: 3px 7px
+	&.large
+		padding: 11px 16px
+		height: var(--input-height-lg)
+		&:focus
+			padding: 10px 15px
+	
+	&[type="search"]
+		background-image: url(../icons/search.svg)
+		background-repeat: no-repeat
+		background-size: 1rem
+		background-position: left 11px center
+		text-indent: 1.25rem
+		&.small
+			text-indent: 1.65rem
+		&:focus
+			background-position: left 10px center
+		&::-webkit-search-decoration
+			-webkit-appearance: none
+		&::-webkit-search-cancel-button
+			-webkit-appearance: none
+			margin-right: -.25rem
+			width: 1.5rem
+			height: 1.5rem
+			background-size: 1rem
+			background-image: url(../icons/close.svg)
+			background-repeat: no-repeat
+			background-position: center
+			cursor: pointer
+	&:disabled
+		color: var(--input-disabled-fg)
+		background-color: var(--input-disabled-bg)
+		cursor: not-allowed !important
+		&:hover
+			border-color: var(--input-border-color)
+
+	&[type=range]
+		appearance: auto
+
+
+input[type=radio]
+	-webkit-appearance: none
+	appearance: none
+	border: 1px solid #8E8CA0
+	border-radius: 20px
+	+size(20px)
+	padding: 0
+	margin: 0
+	display: inline-block
+	transition: all var(--transition-time-short)
+
+	&:active
+		+mask-icon-with-color('dot', #8E8CA0, 0.6)
+
+	&:checked
+		background: white
+		border-color: #714DFF
+		+mask-icon-with-color('dot', #714DFF, 0.5)
+		&:active
+			background: #5500F5
+			border-color: #5500F5
+			+mask-icon-with-color('dot', #8E8CA0, 0.6)
+
+	&:focus
+		outline: 1px solid #714DFF
+		outline-offset: 2px
+
+input[type=checkbox]
+	-webkit-appearance: none
+	appearance: none
+	border: 1px solid var(--input-checkbox-color)
+	border-radius: var(--border-radius-xs)
+	padding: 0
+	margin: 0
+	display: inline-block
+	transition: all var(--transition-time-short)
+	cursor: pointer
+	@mixin checkbox-render($size, $icon-size-ratio)
+		+size($size)
+		&:hover:not(:disabled)
+			+mask-icon-with-color('check', var(--input-checkbox-color), $icon-size-ratio)
+		&:disabled
+			border-color: var(--input-disabled-fg)
+			cursor: not-allowed
+		&:checked
+			background: var(--input-checkbox-checked-color)
+			border-color: var(--input-checkbox-checked-color)
+			+mask-icon-with-color('check', var(--body-bg), $icon-size-ratio)
+			&.half-checked
+				+mask-icon-with-color('minus', var(--body-bg), $icon-size-ratio)
+
+			&:hover
+				background: var(--input-checkbox-checked-hover-color)
+				border-color: var(--input-checkbox-checked-hover-color)
+				+mask-icon-color(rgba($body-bg, 0.5))
+
+			&:disabled
+				background: var(--input-disabled-fg)
+				border-color: var(--input-disabled-fg)
+				+mask-icon-color(var(--body-bg))
+
+	+checkbox-render(20px, 0.5)
+
+	&.small
+		+checkbox-render(16px, 0.42)
+
+	&.large
+		+checkbox-render(24px, 0.6)
+
+	&:focus
+		outline: 1px solid var(--input-checkbox-checked-hover-color)
+		outline-offset: 2px
+
+	& + label
+		margin-left: $pad_1_2
+		cursor: pointer
+	&:disabled + label
+		cursor: not-allowed
+		color: var(--input-disabled-fg)
+
+select
+	background-image: var(--input-select-arrow)
+	background-position: right 10px center
+	background-size: 18px auto
+	background-repeat: no-repeat
+	padding-right: 34px
+	cursor: pointer
+	&:hover
+		background-image: var(--input-select-arrow)
+		background-position: right 10px center
+	&:focus
+		padding-right: 33px
+		background-position: right 9px center
+	&.small
+		padding-right: 28px
+		background-position: right 8px center
+		&:focus
+			padding-right: 27px
+			background-position: right 7px center
+
+select
+	> option
+		background-color: var(--body-bg)
+		color: var(--body-fg)
+	&.inverted
+		color: inherit
+		background-image: var(--input-select-arrow-light)
+		border-color: rgba( $input-border-color, 0.65)
+		&:hover
+			border-color: rgba( $input-border-color, 0.85)
+			&:disabled
+				border-color: rgba( $input-border-color, 0.65)
+
+::placeholder
+	color: var(--input-placeholder)
+	transition: color var(--transition-time-short)
+	opacity: 1
+	font-weight: normal
+
+input[type="time"], input[type="date"]
+	-webkit-text-fill-color: var(--input-fg)
+	&::-webkit-calendar-picker-indicator
+		filter: var(--icon-filter)
+		cursor: pointer
+	&:disabled
+		-webkit-text-fill-color: var(--input-disabled-fg)
+		-webkit-opacity: 1
+		opacity: 1
+		color: var(--input-disabled-fg)
+
+textarea
+	height: 76px
+	min-height: 76px
+	transition: border-color var(--transition-time-short), color var(--transition-time-short)
+	resize: vertical
+
+a
+	color: var(--anchor-color)
+	transition: all var(--transition-time-short)
+
+.hidden
+	display: none !important
+
+.vhidden
+	visibility: hidden !important
+
+.no-transitions
+	&, *
+		transition: none !important
+
+.text-muted
+	color: var(--table-muted-color) !important
+
+button, .button
+	&.primary,
+	&.secondary,
+	&.success,
+	&.success-secondary,
+	&.error,
+	&.error-secondary,
+	&.warning,
+	&.warning-secondary,
+	&.transparent,
+	&.grey,
+	&.icon-only
+		-webkit-appearance: none
+		appearance: none
+		border-radius: var(--border-radius)
+		font-size: var(--button-text)
+		font-weight: var(--button-font-weight)
+		line-height: var(--button-line-height)
+		padding: var(--button-padding-y) var(--button-padding-x)
+		border: 0
+		margin: 0
+		white-space: nowrap
+		display: inline-flex
+		align-items: center
+		justify-content: center
+		cursor: pointer
+		text-decoration: none
+		min-height: var(--input-height)
+		transition: all var(--transition-time-short)
+		&:disabled
+			cursor: not-allowed !important
+
+	&.button-block
+		width: 100%
+
+	&.static
+		cursor: default
+		font-weight: var(--font-weight-bold)
+		&[title]:not([title=""])
+			cursor: help
+
+	&.primary
+		background-color: var(--primary)
+		color: var(--primary-text)
+		--color: var(--primary-text)
+		border: var(--button-border-width) solid var(--primary-border)
+		&:not(.static):hover
+			background-color: var(--primary-hover)
+			color: var(--primary-hover-text)
+			--color: var(--primary-hover-text)
+			border: var(--button-border-width) solid var(--primary-border-hover)
+		&:not(.static):active, &.active
+			background-color: var(--primary-active)
+			color: var(--primary-active-text)
+			--color: var(--primary-active-text)
+			border: var(--button-border-width) solid var(--primary-border-active)
+		&:not(.static):focus
+			outline: 0
+			box-shadow: 0 0 0 2px var(--primary-border-active)
+		&:disabled, &.disabled
+			&, &:hover
+				background-color: var(--primary-disabled)
+				color: var(--primary-disabled-text)
+				--color: var(--primary-disabled-text)
+				border: var(--button-border-width) solid var(--primary-border-disabled)
+
+	&.secondary
+		background-color: var(--secondary)
+		color: var(--secondary-text)
+		--color: var(--secondary-text)
+		border: var(--button-border-width) solid var(--secondary-border)
+		
+		&:not(.static):hover
+			background-color: var(--secondary-hover)
+			color: var(--secondary-hover-text)
+			--color: var(--secondary-hover-text)
+			border: var(--button-border-width) solid var(--secondary-border-hover)
+		&:not(.static):active
+			background-color: var(--secondary-active)
+			color: var(--secondary-active-text)
+			--color: var(--secondary-active-text)
+			border: var(--button-border-width) solid var(--secondary-border-active)
+		&:not(.static):focus
+			outline: 0
+			box-shadow: 0 0 0 2px var(--secondary-hover-text)
+		&:disabled, &.disabled
+			&, &:hover
+				background-color: var(--secondary-disabled)
+				color: var(--secondary-disabled-text)
+				--color: var(--secondary-disabled-text)
+				border: var(--button-border-width) solid var(--secondary-border-disabled)
+
+	&.success
+		background-color: var(--success)
+		color: var(--success-text)
+		--color: var(--success-text)
+		border: var(--button-border-width) solid var(--success-border)
+		
+		&:not(.static):hover
+			background-color: var(--success-hover)
+			color: var(--success-hover-text)
+			--color: var(--success-hover-text)
+			border: var(--button-border-width) solid var(--success-border-hover)
+		&:not(.static):active
+			background-color: var(--success-active)
+			color: var(--success-active-text)
+			--color: var(--success-active-text)
+			border: var(--button-border-width) solid var(--success-border-active)
+		&:not(.static):focus
+			outline: 0
+			box-shadow: 0 0 0 2px var(--success-border-active)
+		&:disabled, &.disabled
+			&, &:hover
+				background-color: var(--success-disabled)
+				color: var(--success-disabled-text)
+				--color: var(--success-disabled-text)
+				border: var(--button-border-width) solid var(--success-border-disabled)
+
+	&.success-secondary
+		background-color: var(--success-secondary)
+		color: var(--success-secondary-text)
+		--color: var(--success-secondary-text)
+		border: var(--button-border-width) solid var(--success-secondary-border)
+		
+		&.static,
+		&:hover
+			background-color: var(--success-secondary-hover)
+			color: var(--success-secondary-hover-text)
+			--color: var(--success-secondary-hover-text)
+			border: var(--button-border-width) solid var(--success-secondary-border-hover)
+		&:not(.static):active
+			background-color: var(--success-secondary-active)
+			color: var(--success-secondary-active-text)
+			--color: var(--success-secondary-active-text)
+			border: var(--button-border-width) solid var(--success-secondary-border-active)
+		&:not(.static):focus
+			outline: 0
+			box-shadow: 0 0 0 2px var(--success-secondary-hover-text)
+		&:disabled, &.disabled
+			&, &:hover
+				background-color: var(--success-secondary-disabled)
+				color: var(--success-secondary-disabled-text)
+				--color: var(--success-secondary-disabled-text)
+				border: var(--button-border-width) solid var(--success-secondary-border-disabled)
+
+	&.error
+		background-color: var(--error)
+		color: var(--error-text)
+		--color: var(--error-text)
+		border: var(--button-border-width) solid var(--error-border)
+		
+		&:not(.static):hover
+			background-color: var(--error-hover)
+			color: var(--error-hover-text)
+			--color: var(--error-hover-text)
+			border: var(--button-border-width) solid var(--error-border-hover)
+		&:not(.static):active
+			background-color: var(--error-active)
+			color: var(--error-active-text)
+			--color: var(--error-active-text)
+			border: var(--button-border-width) solid var(--error-border-active)
+		&:not(.static):focus
+			outline: 0
+			box-shadow: 0 0 0 2px var(--error-border-active)
+		&:disabled, &.disabled
+			&, &:hover
+				background-color: var(--error-disabled)
+				color: var(--error-disabled-text)
+				--color: var(--error-disabled-text)
+				border: var(--button-border-width) solid var(--error-border-disabled)
+
+	&.error-secondary
+		background-color: var(--error-secondary)
+		color: var(--error-secondary-text)
+		--color: var(--error-secondary-text)
+		border: var(--button-border-width) solid var(--error-secondary-border)
+		
+		&.static,
+		&:hover
+			background-color: var(--error-secondary-hover)
+			color: var(--error-secondary-hover-text)
+			--color: var(--error-secondary-hover-text)
+			border: var(--button-border-width) solid var(--error-secondary-border-hover)
+		&:not(.static):active
+			background-color: var(--error-secondary-active)
+			color: var(--error-secondary-active-text)
+			--color: var(--error-secondary-active-text)
+			border: var(--button-border-width) solid var(--error-secondary-border-active)
+		&:not(.static):focus
+			outline: 0
+			box-shadow: 0 0 0 2px var(--error-secondary-hover-text)
+		&:disabled, &.disabled
+			&, &:hover
+				background-color: var(--error-secondary-disabled)
+				color: var(--error-secondary-disabled-text)
+				--color: var(--error-secondary-disabled-text)
+				border: var(--button-border-width) solid var(--error-secondary-border-disabled)
+
+	&.warning
+		background-color: var(--warning)
+		color: var(--warning-text)
+		border: var(--button-border-width) solid var(--warning)
+		--color: var(--warning-text)
+
+	&.warning-secondary
+		&.static,
+		&:hover
+			background-color: var(--warning-secondary-hover)
+			color: var(--warning-secondary-hover-text)
+			--color: var(--warning-secondary-hover-text)
+			border: var(--button-border-width) solid var(--warning-secondary-border-hover)
+
+	&.transparent
+		background: transparent
+		--color: var(--body-fg)
+		color: var(--body-fg)
+
+		&:not(.static):hover
+			background: #00000011
+		&:not(.static):active
+			> .icon
+				color: var(--primary)
+				--color: var(--primary)
+		&:disabled, &.disabled
+			&, &:hover
+				color: #868F9C
+				--color: #868F9C
+
+	&.grey
+		background-color: var(--body-bg)
+		&:disabled, &.disabled
+			&, &:hover
+				color: var(--input-disabled-fg)
+
+	&.no-border
+		border: var(--button-border-width) solid transparent !important
+
+	&.small
+		min-width: var(--input-height-sm)
+		min-height: var(--input-height-sm)
+		font-size: var(--button-text-sm)
+		padding: var(--button-padding-y-sm) var(--button-padding-x-sm)
+		&.icon-left
+			padding-left: calc( var(--button-padding-x-sm) / 1.4 )
+			> .icon
+				margin-right: calc( var(--button-padding-x-sm) / 2 )
+		&.icon-right
+			padding-right: calc( var(--button-padding-x-sm) / 1.4 )
+			> .icon
+				margin-left: calc( var(--button-padding-x-sm) / 2 )
+		&.icon-left > .icon,
+		&.icon-right > .icon,
+		&.icon-only > .icon
+			+size(16px)
+		&.icon-only
+			min-width: var(--input-height-sm)
+
+	&.xs
+		border-radius: var(--input-height-xs)
+		min-width: var(--input-height-xs)
+		min-height: var(--input-height-xs)
+		font-size: var(--button-text-xs)
+		font-weight: var(--font-weight-normal)
+		padding: var(--button-padding-y-xs) var(--button-padding-x-xs)
+		line-height: 0
+		&.icon-left
+			padding-left: calc( var(--button-padding-x-xs) / 1.4 )
+			> .icon
+				margin-right: calc( var(--button-padding-x-xs) / 2 )
+		&.icon-right
+			padding-right: calc( var(--button-padding-x-xs) / 1.4 )
+			> .icon
+				margin-left: calc( var(--button-padding-x-xs) / 2 )
+		&.icon-left > .icon,
+		&.icon-right > .icon,
+		&.icon-only > .icon
+			+size(16px)
+		&.icon-only
+			border-radius: var(--input-height-xs)
+			min-width: var(--input-height-xs)
+
+	&.large
+		min-width: var(--input-height-lg)
+		min-height: var(--input-height-lg)
+		font-size: var(--button-text-lg)
+		padding: var(--button-padding-y-lg) var(--button-padding-x-lg)
+		&.icon-left
+			padding-left: calc( var(--button-padding-x-lg) / 1.4 )
+			> .icon
+				margin-right: calc( var(--button-padding-x-lg) / 2 )
+		&.icon-right
+			padding-right: calc( var(--button-padding-x-lg) / 1.4 )
+			> .icon
+				margin-left: calc( var(--button-padding-x-lg) / 2 )
+		&.icon-left > .icon,
+		&.icon-right > .icon,
+		&.icon-only > .icon
+			+size(24px)
+		&.icon-only
+			min-width: var(--input-height-lg)
+
+	&.icon-only
+		min-width: var(--input-height)
+		padding: 0
+		border-radius: var(--border-radius)
+		> .icon
+			+size(20px)
+
+	&.icon-left
+		padding-left: calc( var(--button-padding-x) / 1.5 )
+		> .icon
+			+size(20px)
+			margin-right: calc( var(--button-padding-x) / 2 )
+	&.icon-right
+		padding-right: calc( var(--button-padding-x) / 1.5 )
+		> .icon
+			+size(20px)
+			margin-left: calc( var(--button-padding-x) / 2 )
+
+.icon-wrapper
+	display: inline-block
+	line-height: 1
+	vertical-align: middle
+
+	&[title]:not([title=""])
+		cursor: help
+		
+	> .icon
+		+size(20px)
+.icon
+	&.primary
+		color: var(--primary)
+		--color: var(--primary)
+	&.success
+		color: var(--success)
+		--color: var(--success)
+	&.warning
+		color: var(--warning)
+		--color: var(--warning)
+	&.error
+		color: var(--error)
+		--color: var(--error)
+	&.info
+		color: var(--info)
+		--color: var(--info)
+	&.muted
+		color: var(--table-muted-color)
+		--color: var(--table-muted-color)
+	&.icon-rotate
+		will-change: transform
+		animation: 2s linear 0s infinite running full-rotate-left
+
+.panel-container
+	padding: var(--panel-padding)
+	border-radius: var(--panel-border-radius)
+	box-shadow: var(--panel-shadow)
+	background-color: var(--panel-bg)
+	color: var(--panel-fg)
+	overflow: hidden
+	&.no-padding
+		padding: 0
+
+.button-switcher
+	display: flex
+	align-items: center
+	max-width: 100%
+	overflow-y: visible
+	overflow-x: auto
+	min-height: var(--input-height)
+	flex-shrink: 0
+
+	&.light
+		> a,
+		> button
+			border: 1px solid var(--button-switcher-light-bg)
+			color: var(--button-switcher-light-fg)
+			background-color: var(--button-switcher-light-bg)
+
+	> a,
+	> button
+		-webkit-appearance: none
+		appearance: none
+		font-size: var(--button-text)
+		font-weight: var(--button-font-weight)
+		padding: var(--button-padding-y) var(--button-padding-x)
+		border: 1px solid var(--button-switcher-bg)
+		margin: 0
+		display: inline-flex
+		align-items: center
+		justify-content: center
+		cursor: pointer
+		text-decoration: none
+		white-space: nowrap
+		min-height: var(--input-height)
+		
+		color: var(--button-switcher-fg)
+		background-color: var(--button-switcher-bg)
+		border-radius: 0
+		transition: all var(--transition-time-short)
+
+		&:hover
+			color: var(--button-switcher-hover-fg)
+
+		&:active,
+		&:focus
+			color: var(--button-switcher-focus-fg)
+
+		&:disabled, &.disabled
+			color: var(--button-switcher-disabled-fg)
+			background-color: var(--button-switcher-disabled-bg)
+			border-color: var(--button-switcher-disabled-bg)
+			cursor: not-allowed !important
+
+		.icon
+			+size(1rem)
+			margin-left: $pad_1_2
+			vertical-align: middle
+
+		&.active
+			color: var(--button-switcher-active-fg)
+			background-color: var(--button-switcher-active-bg)
+			border-color: var(--button-switcher-active-bg)
+			&:disabled, &.disabled
+				color: var(--button-switcher-disabled-active-fg)
+				background-color: var(--button-switcher-disabled-active-bg)
+				border-color: var(--button-switcher-disabled-active-bg)
+
+		&:first-child
+			border-top-left-radius: var(--border-radius)
+			border-bottom-left-radius: var(--border-radius)
+
+		&:last-child
+			border-top-right-radius: var(--border-radius)
+			border-bottom-right-radius: var(--border-radius)
+
+	&.small
+		min-height: var(--input-height-sm)
+		> a,
+		> button
+			min-height: var(--input-height-sm)
+			font-size: var(--button-text-sm)
+			padding: var(--button-padding-y-sm) var(--button-padding-x-sm)
+
+	&.large
+		min-height: var(--input-height-sm)
+		> a,
+		> button
+			min-height: var(--input-height-lg)
+			font-size: var(--button-text-lg)
+			padding: var(--button-padding-y-lg) var(--button-padding-x-lg)
+	
+	&.vertical
+		flex-direction: column
+		> a,
+		> button
+			width: 100%
+			justify-content: flex-start
+
+			&:first-child
+				border-top-left-radius: var(--border-radius)
+				border-top-right-radius: var(--border-radius)
+				border-bottom-left-radius: 0
+
+			&:last-child
+				border-top-right-radius: 0
+				border-bottom-left-radius: var(--border-radius)
+				border-bottom-right-radius: var(--border-radius)
+
+	&.separate
+		> a,
+		> button
+			padding-left: $pad
+			padding-right: $pad
+			border-radius: var(--border-radius)
+			margin-right: $pad
+			
+			&:last-child
+				margin-right: 0
+
+			&:not(.active)
+				border: 1px solid var(--border-default-color)
+				color: var(--body-fg)
+				background-color: transparent
+				.icon
+					color: var(--icon-static-color)
+
+.tab-switcher
+	display: flex
+	align-items: center
+	box-shadow: inset 0px calc( var(--tab-switcher-border-width) * -1 ) 0px var(--tab-switcher-border-color)
+	margin-bottom: 2rem
+	overflow-y: visible
+	overflow-x: auto
+	flex-shrink: 0
+
+	> .tab
+		display: flex
+		align-items: center
+		font-size: var(--font-size-lg)
+		font-weight: var(--font-weight-bolder)
+		color: var(--tab-switcher-item-fg)
+		--color: var(--tab-switcher-item-fg)
+		border-bottom: var(--tab-switcher-item-selected-border-width) solid transparent
+		padding-left: 0
+		padding-right: 0
+		padding-bottom: var(--tab-switcher-item-padding-y)
+		margin-left: var(--tab-switcher-item-margin-x)
+		margin-right: var(--tab-switcher-item-margin-x)
+		text-decoration: none
+		letter-spacing: 0.01em
+		white-space: nowrap
+		transition: all var(--transition-time-short)
+		background-color: transparent
+		border-top: none
+		border-left: none
+		border-right: none
+		-webkit-appearance: none
+		appearance: none
+		cursor: pointer
+
+		.icon
+			width: 1.125rem
+			height: 1.125rem
+			margin-right: .25rem
+			transition: all var(--transition-time-short)
+			color: var(--icon-static-color)
+			--color: var(--icon-static-color)
+
+		&:hover
+			color: var(--tab-switcher-item-hover)
+			--color: var(--tab-switcher-item-hover)
+			.icon
+				color: inherit
+				--color: inherit
+			
+		&.active
+			border-bottom-color: var(--tab-switcher-item-selected-border-color)
+			color: var(--tab-switcher-item-selected-fg)
+			--color: var(--tab-switcher-item-selected-fg)
+			.icon
+				color: inherit
+				--color: inherit
+
+		&:first-child
+			margin-left: 0
+
+		&:last-child
+			margin-right: 0
+		
+.vertical-menu
+	list-style: none
+	margin-top: 0
+
+	.item
+		display: flex
+		align-items: center
+		color: var(--button-switcher-fg)
+		font-weight: var(--font-weight-bolder)
+		font-size: var(--font-size-base)
+		border-radius: var(--border-radius)
+		white-space: nowrap
+		cursor: pointer
+		line-height: var(--button-line-height)
+		text-decoration: none
+		padding: $pad
+		margin: 2px 0
+		transition: box-shadow var(--transition-time-short)
+		&:first-child
+			margin-top: 0
+		&:last-child
+			margin-bottom: 0
+
+		a
+			color: inherit
+
+		> .icon
+			flex-shrink: 0
+			margin-right: $pad_1_2
+			+size(1rem)
+			& + *
+				overflow: hidden
+				text-overflow: ellipsis
+		
+		.menu
+			transition: none
+			color: inherit
+			--color: inherit
+			> .icon
+				margin-right: 0
+
+		.options
+			margin-left: auto
+			.icon
+				margin-right: 0
+
+		&:hover,
+		&:focus
+			background-color: var(--secondary)
+			color: var(--primary)
+			box-shadow: var(--drop-shadow-sm)
+			
+		&:active
+			background-color: var(--secondary-active)
+			color: var(--secondary-active-text)
+		&.active
+			background-color: var(--primary-hover)
+			color: var(--button-switcher-active-fg)
+
+// vim: ts=8 sw=8 sts=8 noet:

@@ -1,0 +1,198 @@
+[data-gw="Debug.StateScreen"]
+	> .body
+		display: grid
+		grid-template-columns: minmax(0, 1fr)
+		grid-template-rows: auto minmax(0, 1fr)
+		grid-template-areas: 'toolbar' 'detail'
+		background-color: var(--panel-bg)
+		padding: 0
+		margin: 0
+		max-width: none
+
+		> .toolbar
+			grid-area: toolbar
+			border-bottom: 1px solid var(--border-default-color)
+			display: flex
+			align-items: center
+			padding: 10px
+
+			> *:not(:last-child)
+				margin-right: 5px
+
+			> .fill
+				flex: 1
+
+		> .detail
+			grid-area: detail
+			overflow: auto
+			padding: 20px
+
+			img
+				margin: 20px
+
+			h2
+				font-size: 16px
+				color: red
+
+			.agent
+				background: #cee
+				border: 1px solid #aaa
+				padding: 3px
+				margin-bottom: 3px
+
+			.caller, .callee
+				> *
+					display: inline
+
+			.smart-table
+				margin-bottom: 30px
+
+				.empty-message
+					position: static
+					font-size: 14px
+					padding: 20px
+
+				table
+					table-layout: fixed
+					width: 100%
+					word-break: break-all
+
+					td, th
+						padding: 2px 0
+						height: auto
+					tr[data-json]:hover
+						&, td, th
+							background: #fba
+				
+		th[data-col=extension]
+			width: 100px
+
+		th[data-col=state],
+		th[data-col=available]
+			width: 180px
+
+		th[data-col=start_ts],
+		th[data-col=ring_ts],
+		th[data-col=first_time],
+		th[data-col=dial_ts]
+			width: 180px
+
+		th[data-col=queue]
+			width: 100px
+
+		td[data-status=available]
+			background: #ccffcc
+			color: green
+		td[data-status=unavailable]
+			color: gray
+		td[data-status=busy]
+			background: #ffcccc
+			color: red
+		td[data-status=ringing]
+			background: #ffffcc
+			color: green
+
+		[data-state=ringing]
+		    color: brown
+		[data-state=connected]
+		    color: green
+		[data-state=dialing]
+			color: orange
+
+		.device
+			display: flex
+			&:not(:last-child)
+				margin-bottom: 5px
+				padding-bottom: 5px
+				border-bottom: 1px solid var(--border-default-color)
+
+			.id
+				width: 100px
+				font-size: 10px
+				color: gray
+			.kind
+				width: 100px
+			.status
+				flex: 1
+				&[data-status=reachable]
+					color: green
+				&[data-status=unreachable]
+					color: gray
+
+		.peer
+			display: flex
+			&:not(:last-child)
+				margin-bottom: 5px
+				padding-bottom: 5px
+				border-bottom: 1px solid var(--border-default-color)
+
+			.name
+				width: 100px
+				font-size: 10px
+				color: gray
+			.role
+				width: 100px
+				&[data-role=caller]
+					color: green
+			.num
+				width: 100px
+
+			.state
+				flex: 1
+				&[data-state=precall]
+					color: black
+				&[data-state=incall]
+					color: green
+				&[data-state=left]
+					color: gray
+
+[data-gw="Debug.CallsScreen"]
+	> .body
+		display: grid
+		grid-template-columns: 150px minmax(0, 1fr)
+		grid-template-rows: minmax(0, 1fr)
+		grid-template-areas: 'list detail'
+		background-color: var(--panel-bg)
+		padding: 0
+		margin: 0
+		max-width: none
+
+		> .detail
+			grid-area: detail
+			position: relative
+			overflow: scroll
+
+			.labels
+				z-index: 1
+				position: absolute
+				top: 0
+				left: 0
+				overflow: hidden
+
+				.label
+					position: absolute
+					&:hover
+						background: #aaffaa88
+
+		> .smart-table
+			grid-area: list
+			border-right: 1px solid #ccc
+
+.debug-popup
+	background: #cec
+	padding: 5px
+	font-size: 10px
+	white-space: pre-wrap
+	width: 400px
+	box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2)
+
+.debug-json-popup
+	background: #cec
+	padding: 5px
+	font-size: 10px
+	white-space: pre-wrap
+	width: 600px
+	font-family: monospace
+	box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2)
+
+// vim: ts=8 sw=8 sts=8 noet:

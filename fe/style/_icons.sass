@@ -1,0 +1,55 @@
+@import icon-data
+$icon-path: '/icons' !default
+
+@mixin icon-scale($scale: 1, $force: false)
+	@if $scale != 1 or $force
+		width: calc(#{$scale} * var(--width))
+		height: calc(#{$scale} * var(--height))
+
+@mixin mask-icon-with-color-shared()
+	position: relative
+
+	&::before
+		position: absolute
+		pointer-events: none
+		content: ''
+		top: 0
+		right: 0
+		bottom: 0
+		left: 0
+
+@mixin mask-icon-with-color-specific($name, $color, $scale: 1)
+	&::before
+		$size: map-get($icon-sizes, $name)
+		$wh: #{nth($size, 1) * $scale + 'px'} #{nth($size, 2) * $scale + 'px'}
+		background: $color
+		-webkit-mask: url($icon-path + '/' + $name + '.svg') center center #{'/'} $wh no-repeat
+		mask: url($icon-path + '/' + $name + '.svg') center center #{'/'} $wh no-repeat
+
+@mixin mask-icon-with-color($name, $color, $scale: 1)
+	position: relative
+
+	&::before
+		position: absolute
+		pointer-events: none
+		content: ''
+		top: 0
+		right: 0
+		bottom: 0
+		left: 0
+		$size: map-get($icon-sizes, $name)
+		$wh: #{nth($size, 1) * $scale + 'px'} #{nth($size, 2) * $scale + 'px'}
+		background: $color
+		-webkit-mask: url($icon-path + '/' + $name + '.svg') center center #{'/'} $wh no-repeat
+		mask: url($icon-path + '/' + $name + '.svg') center center #{'/'} $wh no-repeat
+
+@mixin mask-icon-position($x, $y)
+	&::before
+		mask-position: $x $y
+		-webkit-mask-position: $x $y
+
+@mixin mask-icon-color($color)
+	&::before
+		background: $color
+
+// vim: ts=8 sw=8 sts=8 noet:

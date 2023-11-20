@@ -1,0 +1,209 @@
+[data-gw="Outbound.CampaignsScreen"]
+	> .body
+		flex-direction: column
+		padding: 0
+		+breakpoint('>md')
+			flex-direction: row
+			padding: var(--body-padding)
+
+		> .panel-container
+			display: flex
+			flex-flow: column
+			height: 100%
+			> .toolbar
+				display: flex
+				justify-content: space-between
+				flex-wrap: wrap
+				align-items: center
+
+				.button-switcher
+					margin-bottom: $pad_1_2
+					margin-right: $pad
+					width: 100%
+					+breakpoint('>sm')
+						width: auto
+						
+					button
+						width: 100%
+						+breakpoint('>sm')
+							width: auto
+
+				input[type="search"]
+					margin-bottom: $pad_1_2
+					margin-right: 0
+					width: 100%
+					+breakpoint('>sm')
+						width: auto
+					+breakpoint('>md')
+						margin-left: auto
+						margin-right: $pad
+					+breakpoint('>lg')
+						width: var(--input-long-width)
+				> button
+					margin-bottom: $pad_1_2
+					margin-right: $pad
+					&:last-child
+						margin-right: 0
+
+			> .smart-table
+				height: 100%
+				// background: white
+
+				[data-col="description"]
+					white-space: nowrap
+					overflow: hidden
+					text-overflow: ellipsis
+					max-width: 250px
+
+				[data-col="ctl"]
+					justify-content: flex-end
+
+				th
+					white-space: normal
+
+				th[data-col="name"]
+					width: 15%
+					min-width: 100px
+
+				th[data-col="description"]
+					min-width: 100px
+
+				th[data-col="activated"],
+				th[data-col="created"]
+					width: 10%
+					min-width: 140px
+
+				th[data-col="case_count"],
+				th[data-col="active_case_count"],
+				th[data-col="active_case_rate"],
+				th[data-col="closed_case_count"],
+				th[data-col="closed_case_rate"]
+					width: 10%
+					min-width: 100px
+
+			.menu
+				display: inline-flex
+				vertical-align: middle
+				+size(30px)
+				+mask-icon-with-color('moreoptions', var(--button-switcher-active-bg), 1)
+				text-decoration: none
+				border-radius: var(--border-radius)
+				&:hover
+					background-color: var(--secondary-active)
+
+[data-gw="Outbound.CampaignDetailDialog"]
+	> .admin-dialog
+		> .header
+			flex-wrap: wrap
+			+breakpoint('>md')
+				flex-flow: row
+			+breakpoint('<md')
+				> *:first-child
+					padding-bottom: $pad
+			.center
+				width: 100%
+				order: 1
+				+breakpoint('>sm')
+					width: auto
+					order: unset
+
+			input[type="search"]
+				width: 100%
+				+breakpoint('>md')
+					width: var(--input-long-width)
+		> .body
+			height: 100%
+			> .smart-table
+				height: 100%
+
+	.notes
+		display: inline-flex
+		+size(30px)
+		+mask-icon-with-color('report', var(--secondary-text), 0.75)
+
+[data-gw="Outbound.NewCampaignDialog"]
+	.file-handle
+		display: flex
+		align-items: center
+		background-color: var(--body-bg)
+		border-radius: var(--border-radius)
+		margin-top: $pad_1_2
+		padding: $pad
+		
+		&:empty
+			display: none
+
+		.name
+			max-width: 100%
+			overflow: hidden
+			text-overflow: ellipsis
+			font-size: var(--font-size-base)
+			font-weight: var(--font-weight-bold)
+			padding-left: 6px
+
+		.file-handle-button
+			margin-left: auto
+			border: 0
+			cursor: pointer
+			border-radius: 20px
+			+size(20px)
+			+mask-icon-with-color('check', white, 0.65)
+			background-color: var(--success)
+			background-repeat: no-repeat
+			&:hover
+				background-color: transparent
+				+mask-icon-with-color('cross', black, 0.8)
+
+		+ .form-buttons
+			margin-top: $pad_2
+
+.mobile-ui[data-appcardtype="Outbound.CampaignsScreen"]
+	[data-gw="Outbound.EditCampaignDialog"],
+	[data-gw="Outbound.CampaignDetailDialog"],
+	[data-gw="Outbound.CampaignCaseNotesDialog"],	
+	[data-gw="Outbound.NewCampaignDialog"],
+	[data-gw="Main.ConfirmDialog"]
+		> .popup-button-close
+			display: none
+
+[data-gw="FileUploadBox"]
+	padding: $pad_2
+	text-align: center
+	border: var(--file-upload-box-border)
+	border-radius: var(--border-radius)
+
+	&.drop-zone-active:not(.disabled)
+		background: var(--primary)
+
+	> .dnd-note
+		margin-top: $pad
+
+
+.outbound-cases-smart-table
+	[data-col="status"]
+		white-space: nowrap
+
+	td[data-col="ctl"]
+		[data-action="dial"]
+			+mask-icon-with-color('phone-filled', var(--success-text), (16/24))
+
+		[data-action="outbound-case-notes"]
+			+mask-icon-with-color('report', var(--secondary-text), (16/24))
+
+		[data-action="outbound-case-close"]
+			+mask-icon-with-color('check', var(--secondary-text), (16/24))
+
+	tr[data-status="active"]
+		background-color: var(--table-alternation-warning-bg)
+		color: var(--warning-hover)
+	tr[data-status="new"]
+	tr[data-mine="1"]
+		background-color: var(--table-alternation-success-bg)
+		color: var(--success-hover)
+	
+	tr.linked-contact
+		[data-col="contact_name"], [data-col="contact_company"]
+			color: var(--table-muted-color)
+
+
+// vim: ts=8 sw=8 sts=8 noet:

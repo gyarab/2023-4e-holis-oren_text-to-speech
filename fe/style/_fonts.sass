@@ -1,0 +1,6 @@
+@each $weight, $src in $font-srcs
+	@font-face
+		font-family: #{$font-face}
+		font-style: normal
+		font-weight: #{$weight}
+		src: url('#{$src}') format('#{$font-format}')

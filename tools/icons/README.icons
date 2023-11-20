@@ -1,0 +1,142 @@
+Icon sprite system
+------------------
+
+Icon addition
+-------------
+
+Primary source for icons is icons.svg, add new icons there.
+
+Icons in this file are represented as <symbol> elements that each defines its own
+viewbox and the content of the icon.
+
+When adding a new icon, it's good to:
+
+- clean it
+  - in inkscape unroll all useless grouppings via ctrl+shift+g
+  - in inkscape if possible join all separate <path> elements into one
+    by using path->merge (ctrl+k)
+- run svgcleaner[1] on it (svgcleaner --indent=2 --apply-transform-to-paths=yes --multipass $in $out)
+- parametrize the color
+  - replace fill/stroke values with var(--color, #000) where appropriate
+
+[1] https://github.com/RazrFalcon/SVGCleaner
+
+
+Icon usage via HTML/DOM
+-----------------------
+
+In ideal world, icons.svg would be somehow useable as such alone. You can use
+icons.svg directly by calling Utils.useIcon('symbol-name') in JS code. This will
+add <svg class=icon data-name=symbol-name ...><use href="icons.svg#symbol-name"></svg> 
+to the HTML document. The resulting icon is styleable = require('CSS via CSS
+variables that are referenced in the SVG symbol via var(). We usually use --color
+variable and sometimes --thickness variable. There are several mixins provided
+in style/_mixins.sass to style the icons this way.
+
+The world is not completely ideal though, and the above method is rather slow in
+some (mobile) browsers. That makes it not the best method to use if we need to
+add a lot of icons like when rendering long lists of items that each contains
+a bunch of icons, etc.
+
+
+Icon usage via CSS background-image
+-----------------------------------
+
+(deprecated for icons with colors set = require('CSS, use CSS mask method)
+
+It's less resource intensive to use CSS background property to display icons
+in such situations. We don't want to lose the benefit of having all icons
+defined in a single file and loaded at once, therefore we also support
+alternative method of using icons via a SVG sprite that has all icons
+layed out on the vertical axis and every icon's location described by
+a named SVG <view id="symbol-name-view">.
+
+This SVG sprite is generated using a helper script icons-js-update.php
+and is named icons-sprite.svg.
+
+We can use icon = require('the sprite by referencing its view inside the
+sprite SVG file via a fragment identifier/linking [2]:
+
+  background-image: url("icons-sprite.svg#icon-view")
+
+  <img src="icons-sprite.svg#icon-view">
+
+[2] https://www.w3.org/TR/SVG/linking.html#LinksIntoSVG
+
+We can also open icons-sprite.svg file itself to view all the icons at once,
+for inspection or preview.
+
+Unfortunately we can't style the sprite SVG = require('CSS via CSS variables (yet, see
+below for future developments), which is a major drawback of this method.
+
+To work around this limitation, we use the following method:
+
+  - in SASS style, always use a special mixin to declare the use of a icon
+    = require('the sprite as a CSS background
+  - when generating icons-sprite.svg, the icons-js-update.php script
+    scans SASS files for the use of this mixin and creates multiple
+    <use>s and <view>s of the icon for each actually used color of the icon
+
+
+Icon scaling
+------------
+
+Icon system is designed such that the <symbol> itself defines the natural
+size of the icon via a viewBox parameter. When simply referencing the icon
+= require('HTML or = require('the sprite, the resulting image on the page will have
+the natural size of the icon.
+
+If you want to scale the icon while preserving its aspect ratio, you
+need to specify the scale factor somehow.
+
+Following attributes affect SVG scaling:
+
+  https://www.w3.org/TR/SVG/coords.html#PreserveAspectRatioAttribute
+  https://www.w3.org/TR/SVG/interact.html#ZoomAndPanAttribute
+  https://www.w3.org/TR/SVG/coords.html#TransformProperty
+
+We use this combination:
+
+ TODO...
+ preserveAspectRatio(xMidYMid).
+ transform(scale(5))
+ zoomAndPan(magnify).
+
+
+Icon usage via CSS mask-image
+-----------------------------
+
+To allow the use of var(--color) to set the icon color via CSS, we use
+CSS mask property to apply alpha mask in the shape of an SVG icon to
+the colored box placed inside the element that we want to show icon
+inside of.
+
+This is done via the following CSS:
+
+  div
+    position: relative
+
+    &::before
+      position: absolute
+      content: ''
+      top: 0
+      right: 0
+      bottom: 0
+      left: 0
+      background: var(--icon-color)
+      -webkit-mask: url('images/icons/icon-name.svg') center center / 16px 16px no-repeat
+      mask: url('images/icons/icon-name.svg') center center / 16px 16px no-repeat
+      pointer-events: none
+
+
+Future development
+------------------
+
+In the future it will be possible to customize icons imported as background
+images in CSS via SVG parameters:
+
+  https://tabatkins.github.io/specs/svg-params/
+
+  background-image: url("icons.svg#icon-view" param(--color #123456));
+
+This spec is in development since mid-2019.

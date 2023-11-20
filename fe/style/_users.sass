@@ -1,0 +1,44 @@
+/* App.UserManagementScreen */
+
+.user-management-screen
+	min-width: map-get($breakpoints, 'sm')
+
+	.button-switcher
+		margin-bottom: $pad_2
+
+	.users-title
+		display: flex
+		font-weight: var(--font-weight-bolder)
+		margin-bottom: $pad_1_2
+		padding-bottom: $pad
+		border-bottom: var(--border-default-width) solid var(--border-default-color)
+
+	.users-title div
+		flex: 1
+
+	.users-list
+		.user
+			display: flex
+			align-items: center
+			margin-top: var(--pad)
+			margin-bottom: var(--pad)
+
+			&:last-child
+				margin-bottom: 0
+
+			.username, .role, .company
+				flex: 1
+
+			button
+				margin-right: $pad_1_2
+				&:last-child
+					margin-right: 0
+
+.screen-header
+	display: flex
+	align-items: flex-start
+	justify-content: space-between
+	& > :first-child
+		margin-right: auto
+	& > :not(:first-child):not(:last-child)
+		margin-right: $pad
