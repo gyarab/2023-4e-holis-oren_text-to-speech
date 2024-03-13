@@ -19,13 +19,11 @@ GW.define('Pubweb.PublicScreen', 'GW.Component', {
 			children: [{
 				ref: 'headerEl',
 				className: 'header',
-				children: [
-					Utils.useIcon('logo', {cls: 'logo'})
-					, {
-						':skip': !this.subtitle,
-						nodeName: 'h2',
-						textContent: this.subtitle,
-					}],
+				children: [{
+					':skip': !this.subtitle,
+					nodeName: 'h2',
+					textContent: this.subtitle,
+				}],
 			}, {
 				ref: 'bodyEl',
 				className: 'body',
@@ -837,7 +835,7 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 							this.validateSaveButton();
 							this.showSpeakers(this.languageSelect.getValue())
 						},
-						name: 'language'
+						name: 'language_id'
 					},{
 						label: 'Mluvčí',
 						xtype: 'SelectField',
@@ -934,7 +932,7 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 			},
 
 			async 'after:initComponent'() {
-				await this.showSpeakers(bind.data?.language || this.languageSelect.getValue());
+				await this.showSpeakers(bind.data?.language_id || this.languageSelect.getValue());
 
 				setTimeout(() => {
 					bind.originalData = bind.data || {
@@ -1033,12 +1031,13 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 				try {
 					return await REST.POST(`tts`, {
 						text: data.text,
-						languageId: Number(data.language),
+						languageId: Number(data.language_id),
 						speakerId: Number(data.voice),
 						name: data.name,
 						id: bind.data?.id,
 						pitch: data.pitch,
-						rate: data.rate
+						rate: data.rate,
+						directoryId: bind.directory?.id
 					})
 				} catch (ex) {
 					let message = 'Je nám líto, ale něco se pokazilo.';
@@ -1055,7 +1054,7 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 			},
 
 			validateChanges(data) {
-				const languageChange = Number(data.language) !== Number(bind.originalData.language);
+				const languageChange = Number(data.language_id) !== Number(bind.originalData.language_id);
 				const voiceChange = Number(data.voice) !== Number(bind.originalData.voice)
 
 				if ((data.name || languageChange || voiceChange) && !bind.data?.id && !data.text) {
@@ -1148,6 +1147,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 	},
 
 	recordsScreen() {
+		const me = this;
 		this.el.innerHTML = '';
 
 		this.el.gwCreateChild({
@@ -1163,6 +1163,22 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 					className: 'search small',
 					'attr:placeholder': 'Hledat',
 					'on:input': e => this.filterRecords(e.target.value)
+				},{
+					nodeName: 'button',
+					type: 'button',
+					className: 'primary icon-left small',
+					children: [Utils.useIcon('back'), {
+						nodeName: 'span',
+						textContent: 'Zpět'
+					}],
+					'on:click': async () => {
+						if (this.directory?.id) {
+							me.directory = !this.directory.parent_id ?
+								null :
+								await REST.GET(`directory/${this.directory.parent_id}`);
+							Application.pushRoute(`/text-to-speech?directory=${me.directory?.id || ''}`)
+						}
+					}
 				},{
 					nodeName: 'button',
 					type: 'button',
@@ -1184,6 +1200,15 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						nodeName: 'span',
 						textContent: 'Nový záznam'
 					}]
+				},{
+					nodeName: 'button',
+					type: 'button',
+					className: 'primary icon-left small',
+					'on:click': () => this.openCreateFolderDialog(),
+					children: [Utils.useIcon('plus'), {
+						nodeName: 'span',
+						textContent: 'Nová složka'
+					}]
 				}]
 			},{
 				xtype: 'SmartTable',
@@ -1194,7 +1219,22 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 					return [{
 						name: 'Název',
 						// filter: true,
-						id: 'name'
+						id: 'name',
+						formatCell(td, v, row) {
+							if (!row.record_id) {
+								td.classList.add('directory')
+								td.gwCreateChild({
+									nodeName: 'a',
+									textContent: v,
+									'on:click': () => {
+										me.directory = row;
+										Application.pushRoute(`/text-to-speech?directory=${me.directory?.id || ''}`)
+									}
+								});
+							} else {
+								td.textContent = v;
+							}
+						}
 					},{
 						name: 'Jazyk',
 						// filter: true,
@@ -1211,6 +1251,17 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						id: 'ctl',
 						name: '',
 						formatCell(td, v, row) {
+							if (!row.record_id) {
+								td.gwCreateChild({
+									nodeName: 'button',
+									type: 'button',
+									className: 'secondary icon-only small',
+									children: [Utils.useIcon('delete')],
+									'on:click': async () => me.deleteDirectoryDialog(row)
+								})
+								return;
+							}
+
 							td.gwCreateChild({
 								xtype: 'AudioPlay',
 								staticAudio: row.id,
@@ -1237,6 +1288,59 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 				}
 			}]
 		}, this)
+	},
+
+	deleteDirectoryDialog(directory) {
+		const me = this;
+
+		new Main.FormDialog({
+			title: 'Smazat složku',
+			subtitle: 'Smazání složky smažene všechna data data v ní',
+
+			renderFormFields() {
+				return [{
+					xtype: 'AckCheckboxField',
+					name: 'moveDirectoriesToRoot',
+					shortText: 'Smazat slořku a obsah zachovat?',
+					optional: true,
+					autofocus: true
+				}];
+			},
+
+			async onSave(data) {
+				await REST.DELETE(`directory/${directory.id}?moveDirectoriesToRoot=${data.moveDirectoriesToRoot}`);
+				me.records = await REST.GET(`tts/record/list?directoryId=${me.directory?.id || ''}`);
+				me.table.setData(me.records);
+			}
+		})
+	},
+
+	openCreateFolderDialog() {
+		const me = this;
+
+		new Main.FormDialog({
+			title: 'Nová složka',
+			subtitle: 'Složka bude založna pod aktuální složkou',
+
+			renderFormFields() {
+				return [{
+					xtype: 'TextField',
+					name: 'name',
+					optional: false,
+					autofocus: true,
+					label: 'Název'
+				}];
+			},
+
+			async onSave(data) {
+				const directory = await REST.POST('directory', {
+					...data,
+					parent_id: me.directory?.id
+				});
+				me.records.push(directory)
+				me.table.setData(me.records);
+			}
+		})
 	},
 
 	noTokenScreen() {
@@ -1294,9 +1398,17 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 	},
 
 	async reloadTable() {
-		this.records = await REST.GET('tts/record/list');
+		const url = new URL(window.location.href);
+		if (url.searchParams.get('directory')) {
+			const id = Number(url.searchParams.get('directory'));
+			if (!isNaN(id)) {
+				this.directory = await REST.GET(`directory/${id}`)
+			}
+		}
 
-		if (this.records.length === 0) {
+		this.records = await REST.GET(`tts/record/list?directoryId=${this.directory?.id || ''}`);
+
+		if (this.records.length === 0 && !this.directory) {
 			this.anyRecordsScreen()
 		} else if (!this.table) {
 			this.recordsScreen();
@@ -1326,13 +1438,15 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 			onSaveSuccess() {
 				bind.reloadTable();
 			},
-			data: record
+			data: record,
+			directory: bind.directory
 		})
 	},
 
 	async deleteRow(id) {
 		await REST.DELETE(`tts/${id}`)
-		await this.reloadTable();
+		this.records = this.records.filter(r => r.id !== id);
+		this.table.setData(this.records)
 	},
 
 	showSettingsPopup(ev, row) {
@@ -1575,7 +1689,7 @@ GW.define('Main.Screen', 'GW.Component', {
 				}, {
 					className: 'logo',
 					ref: 'logoEl',
-					children: [Utils.useIcon('logo')],
+					textContent: 'LOGO',
 					'on:click': ev => Application.replaceRoute(APP_BASE),
 				}, {
 					className: 'title',

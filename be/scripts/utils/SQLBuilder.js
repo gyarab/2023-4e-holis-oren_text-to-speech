@@ -24,13 +24,21 @@ class SQLBuilder {
 		this.fieldsClause = '';
 		this.fromClause = '';
 
-		this.pool = new Pool({
+		const conf = {
 			host: env.pg_host,
 			port: env.pg_port,
 			database: env.pg_db,
 			user: env.pg_user,
 			password: env.pg_pass
-		});
+		};
+
+		if (env.pg_sslmode === "require") {
+			conf.ssl = {
+				rejectUnauthorized: false
+			};
+		}
+
+		this.pool = new Pool(conf);
 	}
 
 	select(tableName) {
@@ -87,7 +95,7 @@ class SQLBuilder {
 	}
 
 	from(...tables) {
-		this.fromClause = tables.join(' ');
+		this.fromClause += ' ' + tables.join(' ');
 		return this;
 	}
 
@@ -117,6 +125,11 @@ class SQLBuilder {
 			this.conditions.push(conditionEdited)
 		}
 
+		return this;
+	}
+
+	whereId(id) {
+		this.where('id = ?', id);
 		return this;
 	}
 
@@ -229,6 +242,29 @@ class SQLBuilder {
 		return (result.rows || []);
 	}
 
+	async asMap(key='id', client) {
+		const rows = await this.getList(client);
+
+		const map = new Map();
+
+		for (const a of rows) {
+			map.set(a[key], a);
+		}
+
+		return map;
+	}
+
+	async asObject(key='id', client) {
+		const rows = await this.getList(client);
+		const obj = new Map();
+
+		for (const a of rows) {
+			obj[a[key]] = a;
+		}
+
+		return obj;
+	}
+
 	/**
 	 * Gets one result row
 	 *
@@ -334,6 +370,25 @@ class SQLBuilder {
 		this.fromClause = '';
 	}
 
+	async deleteById(tableName, id) {
+		this.checkKeyOperationDuplicity('DELETE');
+		this.keyOperation = 'DELETE FROM';
+		this.fromClause = this.escapeIdentifier(tableName);
+		this.where('id = ?', id);
+		await this.run();
+	}
+
+	async oneOrNoneById(tableName, id) {
+		this.checkKeyOperationDuplicity('SELECT');
+		this.keyOperation = 'SELECT';
+		if (tableName) {
+			this.fromClause = this.escapeIdentifier(tableName);
+		}
+
+		this.where('id = ?', id);
+		return this.oneOrNone();
+	}
+
 	//Checkings
 	checkKeyOperationDuplicity(operation) {
 		if (this.keyOperation !== '') {
@@ -359,6 +414,51 @@ class SQLBuilder {
 		}
 
 		await client.release();
+	}
+
+	async runQuery(command, values=[]) {
+		const client = await this.pool.connect();
+
+		let result;
+		try {
+			result = await client
+				.query(
+					command,
+					values
+				);
+		} catch (err) {
+			console.log(err);
+		}
+
+		await client.release();
+
+		this.reset();
+		return result.rows;
+	}
+
+	async one(db, id) {
+		const row = await this.oneOrNoneById(db, id);
+
+		if (!row) {
+			throw new ApiError(404);
+		}
+
+		return row;
+	}
+
+	async insertIfNotPresentElseUpdate(table, condition, value) {
+		const item = await this.select(table)
+			.where(...condition)
+			.oneOrNone();
+
+		if (!item) {
+			return await this.insert(table, value).oneOrNone();
+		} else {
+			return await this.update(table)
+				.set(value)
+				.where(...condition)
+				.oneOrNone();
+		}
 	}
 }
 module.exports = SQLBuilder

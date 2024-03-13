@@ -9,6 +9,8 @@ const { PassThrough } = require('stream');
 const axios = require('axios')
 const env = require("./env.js");
 const {parseId, replaceSpecialLetters} = require("./utils/utils");
+const {validateId} = require("./utils/validations");
+const {validateRightToFolder, getSubsidaryDirectories} = require("./directories");
 
 let app = express();
 const db = new SQLBuilder();
@@ -151,12 +153,14 @@ class TextToSpeech {
 	}
 
 	buildRecordGet() {
-		return db.select('speech_records')
-			.fields('sr.id, srl.language, sr.name, sr.rate, sr.pitch, speaker, region, text')
+		return db.select()
+			.fields('sr.*, d.*, srl.language, srl.id AS language_id, sr.rate, sr.pitch, srv AS speaker_id, speaker, region, text')
 			.from(
-				'speech_records AS sr',
-				'INNER JOIN speech_records_languages AS srl ON sr.language = srl.id',
-				'INNER JOIN speech_records_voices AS srv ON srv.id = sr.voice'
+				'directories AS d',
+				'INNER JOIN directory_rights dr ON dr.directory_id = d.id',
+				'LEFT JOIN speech_records sr ON sr.id = d.record_id',
+				'LEFT JOIN speech_records_languages AS srl ON sr.language = srl.id',
+				'LEFT JOIN speech_records_voices AS srv ON srv.id = sr.voice'
 			);
 	}
 
@@ -220,15 +224,18 @@ class TextToSpeech {
 const textToSpeech = new TextToSpeech();
 
 async function checkSpeechRecord(id, user) {
+	const dir = await validateId(id, 'directories');
+	await validateRightToFolder(user.id, dir.id);
+
 	const record = await db.select('speech_records')
-		.where('id = ?', id)
+		.where('id = ?', dir.record_id)
 		.oneOrNone();
 
-	if (user.role === 'U' && env.record_visibility_mode === 'peruser') {
+	/*TODO if (user.role === 'U' && env.record_visibility_mode === 'peruser') {
 		if (record.user !== user.id) {
 			throw new ApiError(401, 'You can\'t access this record');
 		}
-	}
+	}*/
 
 	if (!record) {
 		throw new ApiError(404, 'Record not found');
@@ -250,22 +257,37 @@ app.get_json('/tts/speakers/:language([0-9]+)', async req => {
 	return await textToSpeech.getLanguageSpeakers(languageId);
 });
 
-async function saveNewRecord(user, name, text, pregenerated, cfg) {
+async function saveNewRecord(folderId, user, name, text, pregenerated, cfg) {
 	const recordSaved = await db.insert('speech_records', {
 		language: cfg.language.id,
 		voice: cfg.speaker.id,
 		text,
 		pregenerated,
 		name: replaceSpecialLetters(name || ""),
-		"user": user.id,
+		owner: user.id,
 		rate: cfg.rate,
 		pitch: cfg.pitch
 	})
 		.oneOrNone();
 
+	const directory = await db.insert('directories', {
+		name: name,
+		parent_id: folderId || null,
+		type: 'file',
+		record_id: recordSaved.id,
+		owner: user.id
+	}).oneOrNone();
+
+	await db.insert('directory_rights', {
+		directory_id: directory.id,
+		user_id: user.id,
+		permission: 'WRITE'
+	}).run();
+
 	const generated = await textToSpeech.createSpeechFile(user, text, recordSaved.id, cfg);
 
 	await db.update('speech_records')
+		.set('path', './')
 		.set('path', generated.path)
 		.where('id = ?', recordSaved.id)
 		.run();
@@ -294,13 +316,19 @@ async function updateActualRecord(id, text, user, cfg) {
 }
 
 app.post_json('/tts', async req => {
-	let {text, languageId, speakerId, id, rate, pitch, name} = req.body;
+	let {text, languageId, speakerId, id, rate, pitch, name, directoryId} = req.body;
 
 	validateStringNotEmpty(text, 'Text');
 	validateType(languageId, 'number');
 	validateType(speakerId, 'number');
 	validateType(pitch, 'number');
 	validateType(rate, 'number');
+
+	if (directoryId) {
+		validateType(directoryId, 'number');
+		const dir = await validateId(directoryId, 'directories');
+		await validateRightToFolder(req.session.id, dir.id);
+	}
 
 	if (pitch < 0.5 || pitch > 2) {
 		throw new ApiError(400, 'Invalid value pitch must be in range from 50 to 200');
@@ -321,18 +349,21 @@ app.post_json('/tts', async req => {
 	}
 
 	if (!id) {
-		return await saveNewRecord(req.session, name, text, true, recordCfg);
+		id = (await saveNewRecord(directoryId, req.session, name, text, true, recordCfg)).id;
+	} else {
+		validateType(id, 'number');
+		await updateActualRecord(id, text, req.session, recordCfg)
 	}
 
-	validateType(id, 'number');
-
-	return await updateActualRecord(id, text, req.session, recordCfg)
+	return await textToSpeech.buildRecordGet()
+		.where('d.record_id = ?', id)
+		.oneOrNone();
 });
 
 app.post_json('/tts/:id([0-9]+)', async req => {
 	const id = parseId(req.params.id);
 	let {name} = req.body;
-	await checkSpeechRecord(id, req.session);
+	const record = await checkSpeechRecord(id, req.session);
 
 	if (name && typeof name !== 'string') {
 		throw new ApiError(400, 'Does not match type.')
@@ -340,13 +371,15 @@ app.post_json('/tts/:id([0-9]+)', async req => {
 
 	const token = await getToken();
 
+	await db.update('directories').set('name', name).whereId(id).oneOrNone();
+
 	await db.update('speech_records')
 		.set({
 			name: replaceSpecialLetters(name),
 			pregenerated: false,
 			region: token.region
 		})
-		.where('id = ?', id)
+		.where('id = ?', record.id)
 		.oneOrNone();
 });
 
@@ -357,13 +390,15 @@ app.delete_json('/tts/:id([0-9]+)', async req => {
 	fs.unlinkSync(record.path);
 
 	await db.delete('speech_records')
-		.where('id = ?', id)
+		.where('id = ?', record.id)
 		.run();
+
+	await db.delete('directories').whereId(id).run();
 });
 
 app.post_json('/tts/duplicate/:id([0-9]+)', async req => {
-	const id = parseId(req.params.id);
-	const record = await checkSpeechRecord(id, req.session);
+	const recordDirectory = await validateId(req.params.id, 'directories');
+	const record = await checkSpeechRecord(recordDirectory.id, req.session);
 
 	return await db.transaction(async tx => {
 		const recordSaved = await db.insert('speech_records', {
@@ -378,7 +413,21 @@ app.post_json('/tts/duplicate/:id([0-9]+)', async req => {
 		})
 		.oneOrNone(tx);
 
-		const filePath = textToSpeech.buildFilePath(recordSaved.id);
+		const directory = await db.insert('directories', {
+			name: record.name,
+			parent_id: recordDirectory.parent_id,
+			type: 'file',
+			record_id: recordSaved.id,
+			owner: req.session.id
+		}).oneOrNone(tx);
+
+		await db.insert('directory_rights', {
+			directory_id: directory.id,
+			user_id: req.session.id,
+			permission: 'WRITE'
+		}).run(tx);
+
+		const filePath = 'aaa' || textToSpeech.buildFilePath(recordSaved.id);
 
 		fs.copyFileSync(record.path, filePath)
 
@@ -399,7 +448,38 @@ app.post_json('/tts/duplicate/:id([0-9]+)', async req => {
 });
 
 app.get_json('/tts/record/list', async req => {
-	let records = (textToSpeech.buildRecordGet()
+	const directoryId = req.query.directoryId || null;
+
+	let directory;
+	if (directoryId) {
+		directory = await validateId(directoryId, 'directories');
+		await validateRightToFolder(req.session.id, directory.id);
+	}
+
+	const query = textToSpeech.buildRecordGet()
+		.where('(type = ? or sr.pregenerated IS FALSE)', 'directory')
+		.where('user_id = ?', req.session.id)
+		.in('dr.permission', ['READ', 'WRITE'])
+		.more('ORDER BY d.name')
+
+	!directory?.id ?
+		query.where('parent_id IS NULL') :
+		query.where('parent_id = ?', directory.id);
+
+	const results = await query.getList();
+
+	let activeRegion = await getToken();
+	activeRegion = activeRegion ? activeRegion.region : null;
+
+	for (const rec of results) {
+		if (rec.type === 'file') {
+			rec.editable = rec.region === activeRegion;
+		}
+	}
+
+	return results
+
+	/*TODO let records = (textToSpeech.buildRecordGet()
 		.where('pregenerated = ?', false)
 		.more('ORDER BY name'));
 
@@ -418,15 +498,15 @@ app.get_json('/tts/record/list', async req => {
 		rec.editable = rec.region === activeRegion;
 	}
 
-	return records
+	return records*/
 })
 
 app.get_json('/tts/record/:id([0-9]+)', async req => {
 	const id = parseId(req.params.id);
 	await checkSpeechRecord(id, req.session);
 
-	return db.select('speech_records')
-		.where('id = ?', id)
+	return await textToSpeech.buildRecordGet()
+		.where('d.id = ?', id)
 		.oneOrNone();
 });
 
