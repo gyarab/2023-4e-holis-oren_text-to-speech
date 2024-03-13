@@ -1151,6 +1151,14 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 		this.el.innerHTML = '';
 
 		this.el.gwCreateChild({
+			'on:drop': async e => {
+				if (this.directory) {
+					e.stopPropagation();
+					const id = Number(e.dataTransfer.getData("dir-id"));
+					await REST.POST(`directory/append/${id}?id=${this.directory.parent_id || ''}`);
+					me.table.setData(me.records.filter(r => r.id !== id));
+				}
+			},
 			className: 'panel-container',
 			children: [{
 				className: 'screen-header',
@@ -1213,6 +1221,29 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 			},{
 				xtype: 'SmartTable',
 				ref: 'table',
+				renderRow(tr, row) {
+					tr.setAttribute('draggable', true);
+					tr.setAttribute('dir-id', row.id)
+					tr.ondragstart = e => e.dataTransfer.setData("dir-id", row.id);
+
+
+					tr.ondrop = async e => {
+						e.stopPropagation();
+
+						if (!row.record_id) {
+							const id = Number(e.dataTransfer.getData("dir-id"));
+							await REST.POST(`directory/append/${id}?id=${row.id}`);
+							me.table.setData(me.records.filter(r => r.id !== id));
+						} else {
+							Application.notify({
+								kind: 'info',
+								text: 'Cannot move directory under file',
+								priority: 5,
+								timeout: 3000,
+							});
+						}
+					}
+				},
 				getColumns: () => {
 					const openSettings = (ev, row) => this.showSettingsPopup(ev, row);
 

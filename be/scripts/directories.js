@@ -131,6 +131,29 @@ app.get_json('/directory/:id([0-9]+)', async req => {
 		.oneOrNone();
 });
 
+app.post_json('/directory/append/:movedDirId([0-9]+)', async req => {
+	let directoryToId = null;
+
+	if (req.query.id) {
+		const directoryTo = await validateId(req.query.id, 'directories');
+		await validateRightToFolder(req.session.id, directoryTo.id);
+
+		if (directoryTo.type !== 'directory') {
+			throw new ApiError(400, 'Cannot move directory under file');
+		}
+
+		directoryToId = directoryTo.id;
+	}
+
+	const directoryMoved = await validateId(req.params.movedDirId, 'directories');
+	await validateRightToFolder(req.session.id, directoryMoved.id);
+
+	await db.update('directories')
+		.set('parent_id', directoryToId)
+		.whereId(directoryMoved.id)
+		.run();
+});
+
 async function validateUserDirectoryPermission(req) {
 	const directory = await validateId(req.params.id, 'directories');
 	await validateRightToFolder(req.session.id, directory.id);
