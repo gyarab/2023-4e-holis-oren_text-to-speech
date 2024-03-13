@@ -6,6 +6,7 @@ const sessions = require('./scripts/sessions.js');
 const env = require('./scripts/env.js');
 const users = require('./scripts/users.js');
 const directories = require('./scripts/directories.js');
+const record_configurations = require('./scripts/record_configurations.js');
 const textToSpeech = require('./scripts/textToSpeech');
 const microsoftTokens = require('./scripts/microsoftTokens')
 const statistics = require('./scripts/statistics');
@@ -95,6 +96,7 @@ app.all_json('/api/*', async req => {
 app.use('/api', textToSpeech.app);
 app.use('/api', statistics.app);
 app.use('/api', directories.app);
+app.use('/api', record_configurations.app);
 app.get_json('/api/users/companies', async req => await db.select('companies').getList());
 
 // This route is not protected but works only as a checking if token is uploaded and records can be created

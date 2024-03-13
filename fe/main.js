@@ -5,6 +5,51 @@ REST.getURL = function(path) {
 	return path.startsWith("/") ? path : API_BASE + path;
 };
 
+GW.define('RangeField', 'GW.Component', {
+	initComponent() {
+		this.outputRef = this.name + 'Output';
+
+		this.el = document.gwCreateElement({
+			className: 'range-field',
+			children: [{
+				className: 'border-value',
+				nodeName: 'span',
+				textContent: '50'
+			}, {
+				className: 'input',
+				children: [{
+					label: this.label,
+					xtype: 'TextField',
+					name: this.name,
+					type: 'range',
+					min: '0.5',
+					max: '2',
+					value: '1',
+					'on:change': (obj, v) => this.setValue(Number(v)),
+					ref: 'input'
+				}, {
+					className: 'actual-value',
+					nodeName: 'span',
+					ref: this.outputRef
+				}]
+			}, {
+				className: 'border-value',
+				nodeName: 'span',
+				textContent: '200'
+			}]
+		}, this);
+	},
+
+	setValue(value) {
+		this[this.outputRef].textContent = Math.floor(Number(value) * 100) + "";
+		this.input.setValue(value);
+	},
+
+	getValue() {
+		return this.input.value;
+	}
+})
+
 // Public screens:
 
 // {{{ Pubweb.PublicScreen
@@ -773,39 +818,6 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 			confirmText: 'Uložit',
 
 			renderFormFields() {
-				const voiceRangeInput = (label, name) => {
-					const outputRef = name + 'Output';
-
-					return {
-						className: 'range-field',
-						children: [{
-							className: 'border-value',
-							nodeName: 'span',
-							textContent: '50'
-						}, {
-							className: 'input',
-							children: [{
-								label,
-								xtype: 'TextField',
-								name,
-								type: 'range',
-								min: '0.5',
-								max: '2',
-								value: '1',
-								'on:change': (obj, v) => this[outputRef].textContent = Math.floor(Number(v) * 100) + ""
-							}, {
-								className: 'actual-value',
-								nodeName: 'span',
-								ref: outputRef
-							}]
-						}, {
-							className: 'border-value',
-							nodeName: 'span',
-							textContent: '200'
-						}]
-					}
-				}
-
 				return [{
 					label: 'Název záznamu',
 					xtype: 'TextField',
@@ -846,10 +858,17 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 					}],
 				},{
 					className: 'form-field-span',
-					children: [
-						voiceRangeInput('Výška hlasu', 'pitch'),
-						voiceRangeInput('Rychlost mluvení', 'rate')
-					]
+					children: [{
+						xtype: 'RangeField',
+						label: 'Výška hlasu',
+						name: 'pitch',
+						ref: 'pitchOutput'
+					},{
+						xtype: 'RangeField',
+						label: 'Rychlost mluvení',
+						name: 'rate',
+						ref: 'rateOutput'
+					}]
 				}, {
 					className: 'form-field',
 					children: [{
@@ -944,8 +963,8 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 						rate: 1
 					}
 
-					this.pitchOutput.textContent = Math.floor(Number(bind.originalData.pitch) * 100) + "";
-					this.rateOutput.textContent = Math.floor(Number(bind.originalData.rate) * 100) + "";
+					this.pitchOutput.setValue(bind.originalData.pitch);
+					this.rateOutput.setValue(bind.originalData.rate);
 
 					if (bind.data?.id) {
 						this.loadRecordAudio(bind.data?.id);
@@ -1136,10 +1155,6 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 		}
 
 		await this.reloadTable();
-
-		if (App.DataManager.ttsLanguages.length === 0) {
-			await App.DataManager.getLanguages();
-		}
 
 		if (this.records.length === 0 && !App.DataManager.tokenActive) {
 			this.noTokenScreen();
@@ -1602,6 +1617,250 @@ GW.define('StatisticsMonthSelector', 'GW.Component', {
 	}
 })
 
+GW.define('App.RecordConfigurations', 'GW.Component', {
+	initComponent() {
+		const me = this;
+
+		this.el = document.gwCreateElement({
+			className: 'panel-container',
+			children: [{
+				className: 'screen-header',
+				children: [{
+					nodeName: 'h4',
+					textContent: 'Konfigurace nahrávek'
+				},{
+					nodeName: 'input',
+					type: 'search',
+					className: 'search small',
+					'attr:placeholder': 'Hledat',
+					'on:input': e => {
+						let match = TextUtils.createMatchAll(e.target.value || '');
+
+						const matchFields = ['language_name', 'speaker_name'];
+						const recordsFiltered = this.data.filter(r => match(matchFields.map(f => r[f]).join(' ')))
+						recordsFiltered.sort((a, b) => a.name === b.name ? 0 : (a.name > b.name ? 1 : -1));
+
+						this.table.setData(recordsFiltered);
+					}
+				},{
+					nodeName: 'button',
+					type: 'button',
+					className: 'primary icon-left small',
+					'on:click': () => this.openConfigurationDialog(),
+					children: [Utils.useIcon('plus'), {
+						nodeName: 'span',
+						textContent: 'Nová konfigurace'
+					}]
+				}]
+			},{
+				xtype: 'SmartTable',
+				ref: 'table',
+				getColumns: () => {
+					return [{
+						name: 'Jazyk',
+						id: 'language_name'
+					},{
+						name: 'Mluvčí',
+						id: 'speaker_name'
+					},{
+						name: 'Výška',
+						id: 'pitch',
+						formatCell(td, v, row) {
+							td.textContent = me.formatPercentage(v);
+						}
+					},{
+						name: 'Rychlost',
+						id: 'rate',
+						formatCell(td, v, row) {
+							td.textContent = me.formatPercentage(v);
+						}
+					},{
+						id: 'ctl',
+						name: '',
+						formatCell(td, v, row) {
+							td.gwCreateChild({
+								nodeName: 'button',
+								type: 'button',
+								className: 'secondary icon-only small',
+								children: [Utils.useIcon('pencil')],
+								'on:click': async () => me.openConfigurationDialog(row)
+							})
+
+							td.gwCreateChild({
+								nodeName: 'button',
+								type: 'button',
+								className: 'secondary icon-only small',
+								children: [Utils.useIcon('delete')],
+								'on:click': async () => me.deleteConfigurationDialog(row)
+							})
+						}
+					}]
+				}
+			}]
+		}, this);
+	},
+
+	deleteConfigurationDialog(row) {
+		const me = this;
+
+		new Main.ConfirmDialog({
+			title: 'Smazat konfiguraci',
+			subtitle: `Tato akce je nevratná. Chcete ji provést?`,
+			allowCloseButton: false,
+			confirmText: _( 'Smazat'),
+			cancelText: _('Zrušit'),
+
+			async onSave() {
+				await REST.DELETE(`record-configuration/${row.id}`);
+				me.table.setData(me.data.filter(r => r.id !== row.id));
+			}
+		});
+	},
+
+	formatPercentage(value) {
+		return Math.floor(Number(value) * 100) + "";
+	},
+
+	async 'after:initComponent'() {
+		const data = await REST.GET('record-configuration');
+		this.data = data;
+		this.table.setData(data);
+	},
+
+	openConfigurationDialog(row) {
+		const me = this;
+
+		const dlg = new Main.FormDialog({
+			title: !row ? 'Nová konfigurace' : 'Upravit konfiguraci',
+			cancelText: 'Zrušit',
+			confirmText: 'Uložit',
+
+			renderFormFields() {
+				return [{
+					className: 'form-field-span',
+					children:[{
+						label: 'Jazyk',
+						xtype: 'SelectField',
+						options: App.DataManager.ttsLanguages,
+						ref: 'languageSelect',
+						'on:change': () => {
+							this.showSpeakers(this.languageSelect.getValue())
+						},
+						name: 'language_id'
+					},{
+						label: 'Mluvčí',
+						xtype: 'SelectField',
+						options: [],
+						ref: 'speakerSelect',
+						name: 'speaker_id'
+					}],
+				},{
+					className: 'form-field-span',
+					children: [{
+						xtype: 'RangeField',
+						label: 'Výška hlasu',
+						name: 'pitch',
+						ref: 'pitchOutput'
+					},{
+						xtype: 'RangeField',
+						label: 'Rychlost mluvení',
+						name: 'rate',
+						ref: 'rateOutput'
+					}]
+				}];
+			},
+
+			async 'after:initComponent'() {
+				await this.showSpeakers(row?.language_id || this.languageSelect.getValue());
+
+				setTimeout(() => {
+					this.originalData = row || {
+						language_id: this.languageSelect.getValue(),
+						speaker_id: this.speakerSelect.getValue(),
+						pitch: 1,
+						rate: 1
+					}
+
+					this.setFormFieldsData(this.originalData);
+
+					this.pitchOutput.setValue(this.originalData.pitch);
+					this.rateOutput.setValue(this.originalData.rate);
+				}, 1);
+			},
+
+			async showSpeakers(langId) {
+				const speakers = await REST.GET(`tts/speakers/${langId}`);
+
+				const speakersOptimized = [];
+
+				for (const speaker of speakers) {
+					speakersOptimized.push({
+						text: speaker.speaker,
+						value: speaker.id
+					})
+				}
+
+				this.speakerSelect.setOptions(speakersOptimized);
+			},
+
+			async onSave(data) {
+				data = {
+					language_id: Number(data.language_id),
+					speaker_id: Number(data.speaker_id),
+					pitch: Number(data.pitch),
+					rate: Number(data.rate)
+				}
+
+				if (row?.id) {
+					const res = await REST.POST(`record-configuration/${row.id}`, data);
+					const idx = me.data.findIndex(r => r.id === row.id);
+					me.data[idx] = res;
+				} else {
+					const configuration = await REST.POST(`record-configuration`, data);
+					me.data.push(configuration);
+				}
+
+				me.table.setData(me.data);
+
+				this.saved = true;
+			},
+
+			validateChanges(data) {
+				const prev = this.originalData;
+
+				const languageChange = Number(data.language_id) !== Number(prev.language_id);
+				const voiceChange = Number(data.voice) !== Number(prev.voice)
+
+				return languageChange || voiceChange || data.pitch !== prev.pitch || data.pitch !== prev.pitch;
+			},
+
+			async 'before:destroy'() {
+				if (this.saved) {
+					return;
+				}
+
+				const data = this.getFormFieldsData();
+				const unsavedChanges = this.validateChanges(data);
+
+				if (unsavedChanges) {
+					const bind = this;
+					new Main.ConfirmDialog({
+						title: 'Neuložené změny',
+						subtitle: `Zavíráte záznam s neuloženými změnami.\n\r Chcete změny uložit?`,
+						allowCloseButton: false,
+						confirmText: _( 'Uložit změny'),
+						cancelText: _('Zahodit změny'),
+
+						async onSave() {
+							bind.onSave();
+						}
+					});
+				}
+			}
+		});
+	}
+})
+
 GW.define('App.StatisticsScreen', 'GW.Component', {
 	statistics: [],
 
@@ -1789,6 +2048,12 @@ GW.define('Main.Screen', 'GW.Component', {
 			href: APP_BASE + 'statistics',
 			children: [Utils.useIcon('chart'), {textContent: 'Statistiky'}],
 			screen: 'App.StatisticsScreen'
+		},{
+			nodeName: 'a',
+			className: 'item',
+			href: APP_BASE + 'record-configurations',
+			children: [Utils.useIcon('settings'), {textContent: 'Konfigurace'}],
+			screen: 'App.RecordConfigurations'
 		}].concat(App.DataManager.session.role === 'U' ? [] : [{
 			nodeName: 'a',
 			className: 'item',

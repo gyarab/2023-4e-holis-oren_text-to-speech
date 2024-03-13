@@ -15,7 +15,8 @@ GW.define('App.DataManager', 'GW.Object', {
 	runningAudio: null,
 	companies: [],
 
-	async getCompanies() {
+	async init() {
+		await this.getLanguages();
 		this.companies = await REST.GET(`users/companies`);
 	},
 
@@ -60,7 +61,7 @@ GW.define('App.DataManager', 'GW.Object', {
 	 */
 	async login(data) {
 		this.session = await REST.POST('session', data);
-		await this.getCompanies();
+		await this.init();
 		return this.session;
 	},
 
@@ -113,7 +114,7 @@ GW.define('App.DataManager', 'GW.Object', {
 		try {
 			this.session = await REST.GET('session');
 			this.fire('login', this.session);
-			await this.getCompanies();
+			await this.init();
 		} catch (ignored) {}
 
 		return this.session;
