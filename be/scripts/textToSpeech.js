@@ -362,6 +362,36 @@ app.post_json('/tts', async req => {
 	return await textToSpeech.buildRecordGet().where('d.id = ?', id).oneOrNone();
 });
 
+app.post_json('/tts/configuration-change/:id([0-9]+)', async req => {
+	const configuration = await validateId(req.params.id, 'record_configuration');
+
+	validateType(req.body, 'Array');
+
+	const records = [];
+	for (const id of req.body) {
+		validateType(id, 'number');
+		const dir = await validateId(id, 'directories');
+		await validateRightToFolder(req.session.id, id);
+
+		if (dir.type !== 'file') {
+			throw new ApiError(400, 'Cannot change configuration of file')
+		}
+
+		records.push(dir);
+	}
+
+	await db.update('speech_records')
+		.set({
+			record_configuration_id: configuration.id,
+			rate: configuration.rate,
+			pitch: configuration.pitch,
+			language: configuration.language_id,
+			voice: configuration.speaker_id
+		})
+		.in('id', records.map(r => r.record_id))
+		.run();
+})
+
 app.post_json('/tts/:id([0-9]+)', async req => {
 	const id = parseId(req.params.id);
 	let {name} = req.body;

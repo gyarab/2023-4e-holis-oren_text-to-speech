@@ -1255,6 +1255,29 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						nodeName: 'span',
 						textContent: 'Nová složka'
 					}]
+				},{
+					nodeName: 'button',
+					type: 'button',
+					className: 'primary icon-left small',
+					children: [Utils.useIcon('pencil'), {
+						nodeName: 'span',
+						textContent: 'Změnit konfiguraci'
+					}],
+					'on:click': () => {
+						const ids = [];
+
+						for (const r of me.records) {
+							if (this[`checkbox${r.id}`] && this[`checkbox${r.id}`].getValue() === true) {
+								ids.push(r.id);
+							}
+						}
+
+						if (ids.length === 0) {
+							return;
+						}
+
+						this.changeConfigurationDialog(ids);
+					}
 				}]
 			},{
 				xtype: 'SmartTable',
@@ -1286,6 +1309,15 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 					const openSettings = (ev, row) => this.showSettingsPopup(ev, row);
 
 					return [{
+						name: '',
+						id: 'id',
+						formatCell(td, v, row) {
+							row.record_id && td.gwCreateChild({
+								ref: `checkbox${v}`,
+								xtype: 'AckCheckboxField'
+							}, me);
+						}
+					},{
 						name: 'Název',
 						// filter: true,
 						id: 'name',
@@ -1357,6 +1389,29 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 				}
 			}]
 		}, this)
+	},
+
+	async changeConfigurationDialog(recordIds) {
+		const me = this;
+		const configurations = await REST.GET(`record-configuration`)
+
+		new Main.FormDialog({
+			title: 'Změnit konfigurace nahrávek',
+
+			renderFormFields() {
+				return [{
+					xtype: 'SelectField',
+					options: configurations.map(c => ({text: c.name, value: c.id})),
+					name: 'configuration_id',
+					label: 'Konfigurace'
+				}];
+			},
+
+			async onSave(data) {
+				await REST.POST(`tts/configuration-change/${data.configuration_id}`, recordIds)
+				me.reloadTable();
+			}
+		})
 	},
 
 	deleteDirectoryDialog(directory) {
