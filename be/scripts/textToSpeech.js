@@ -154,7 +154,7 @@ class TextToSpeech {
 
 	buildRecordGet() {
 		return db.select()
-			.fields('sr.*, d.*, srl.language, srl.id AS language_id, sr.rate, sr.pitch, srv AS speaker_id, speaker, region, text')
+			.fields('sr.*, d.*, srl.language, srl.id AS language_id, sr.rate, sr.pitch, srv.id AS speaker_id, speaker, region, text')
 			.from(
 				'directories AS d',
 				'INNER JOIN directory_rights dr ON dr.directory_id = d.id',
@@ -266,7 +266,8 @@ async function saveNewRecord(folderId, user, name, text, pregenerated, cfg) {
 		name: replaceSpecialLetters(name || ""),
 		owner: user.id,
 		rate: cfg.rate,
-		pitch: cfg.pitch
+		pitch: cfg.pitch,
+		record_configuration_id: cfg.record_configuration_id
 	})
 		.oneOrNone();
 
@@ -287,12 +288,11 @@ async function saveNewRecord(folderId, user, name, text, pregenerated, cfg) {
 	const generated = await textToSpeech.createSpeechFile(user, text, recordSaved.id, cfg);
 
 	await db.update('speech_records')
-		.set('path', './')
 		.set('path', generated.path)
 		.where('id = ?', recordSaved.id)
 		.run();
 
-	return recordSaved;
+	return directory;
 }
 
 async function updateActualRecord(id, text, user, cfg) {
@@ -305,9 +305,10 @@ async function updateActualRecord(id, text, user, cfg) {
 			text,
 			pregenerated: originalRecord.pregenerated,
 			rate: cfg.rate,
-			pitch: cfg.pitch
+			pitch: cfg.pitch,
+			record_configuration_id: cfg.record_configuration_id
 		})
-		.where('id = ?', id)
+		.where('id = ?', originalRecord.id)
 		.oneOrNone();
 
 	await textToSpeech.createSpeechFile(user, text, id, cfg);
@@ -316,7 +317,7 @@ async function updateActualRecord(id, text, user, cfg) {
 }
 
 app.post_json('/tts', async req => {
-	let {text, languageId, speakerId, id, rate, pitch, name, directoryId} = req.body;
+	let {text, languageId, record_configuration_id, speakerId, id, rate, pitch, name, directoryId} = req.body;
 
 	validateStringNotEmpty(text, 'Text');
 	validateType(languageId, 'number');
@@ -338,6 +339,8 @@ app.post_json('/tts', async req => {
 		throw new ApiError(400, 'Invalid value rate must be in range from 50 to 200');
 	}
 
+	record_configuration_id !== null && await validateId(record_configuration_id, 'record_configuration');
+
 	const language = await textToSpeech.checkLanguage(languageId);
 	const speaker = await textToSpeech.validateLanguageSpeakerMatch(languageId, speakerId);
 
@@ -345,19 +348,18 @@ app.post_json('/tts', async req => {
 		language,
 		speaker,
 		rate,
-		pitch
+		pitch,
+		record_configuration_id
 	}
 
 	if (!id) {
 		id = (await saveNewRecord(directoryId, req.session, name, text, true, recordCfg)).id;
 	} else {
-		validateType(id, 'number');
-		await updateActualRecord(id, text, req.session, recordCfg)
+		await validateId(id, 'directories');
+		await updateActualRecord(id, text, req.session, recordCfg);
 	}
 
-	return await textToSpeech.buildRecordGet()
-		.where('d.record_id = ?', id)
-		.oneOrNone();
+	return await textToSpeech.buildRecordGet().where('d.id = ?', id).oneOrNone();
 });
 
 app.post_json('/tts/:id([0-9]+)', async req => {

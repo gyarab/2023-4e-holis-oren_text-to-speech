@@ -1,6 +1,6 @@
 const {express, ApiError} = require("./utils/aexpress");
 const SQLBuilder = require("./utils/SQLBuilder");
-const {validateId} = require("./utils/validations");
+const {validateId, validateStringNotEmpty} = require("./utils/validations");
 const {validateType} = require("./utils/validations.js");
 const {TextToSpeech} = require("./textToSpeech");
 
@@ -8,8 +8,9 @@ const db = new SQLBuilder();
 const app = express();
 
 async function prepareRecordConfiguration(data) {
-	let {language_id, speaker_id, rate, pitch} = data;
+	let {language_id, speaker_id, name, rate, pitch} = data;
 
+	validateStringNotEmpty(name)
 	validateType(language_id, 'number');
 	validateType(speaker_id, 'number');
 	validateType(pitch, 'number');
@@ -19,7 +20,7 @@ async function prepareRecordConfiguration(data) {
 	await validateId(language_id, 'speech_records_languages');
 	await TextToSpeech.validateLanguageSpeakerMatch(language_id, speaker_id);
 
-	return {language_id, speaker_id, rate, pitch}
+	return {language_id, speaker_id, rate, pitch, name}
 }
 
 async function validateAccessRecordConfiguration(req) {

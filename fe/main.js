@@ -809,8 +809,9 @@ GW.define('AudioWaveform', 'GW.Component', {
 });
 
 GW.define('App.RecordCreateForm', 'GW.Component', {
-	initComponent() {
+	async initComponent() {
 		const bind = this;
+		const configurations = await REST.GET(`record-configuration`)
 
 		const dlg = new Main.FormDialog({
 			title: !bind.data ? 'Nový záznam' : 'Upravit záznam',
@@ -837,8 +838,28 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 					name: 'text',
 					ref: 'textInput'
 				},{
+					label: 'Konfigurace',
+					xtype: 'SelectField',
+					options: [{text: 'Nevybráno', value: ''}].concat(configurations.map(c => ({text: c.name, value: c.id}))),
+					ref: 'configurationSelect',
+					name: 'record_configuration_id',
+					optional: true,
+					'on:change': e => {
+						const id =  Number(e.getValue());
+						if (id) {
+							const configuration = configurations.find(c => c.id === id);
+							this.setFormFieldsData({
+								...this.getFormFieldsData(),
+								language_id: configuration.language_id,
+								voice: configuration.speaker_id,
+								pitch: configuration.pitch,
+								rate: configuration.rate
+							})
+						}
+					}
+				},{
 					className: 'form-field-span',
-					children:[{
+					children: [{
 						label: 'Jazyk',
 						xtype: 'SelectField',
 						options: App.DataManager.ttsLanguages,
@@ -960,7 +981,8 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 						language: this.languageSelect.getValue(),
 						voice: this.speakerSelect.getValue(),
 						pitch: 1,
-						rate: 1
+						rate: 1,
+						record_configuration_id: ''
 					}
 
 					this.pitchOutput.setValue(bind.originalData.pitch);
@@ -1054,9 +1076,10 @@ GW.define('App.RecordCreateForm', 'GW.Component', {
 						speakerId: Number(data.voice),
 						name: data.name,
 						id: bind.data?.id,
-						pitch: data.pitch,
-						rate: data.rate,
-						directoryId: bind.directory?.id
+						pitch: Number(data.pitch),
+						rate: Number(data.rate),
+						directoryId: bind.directory?.id,
+						record_configuration_id: data.record_configuration_id ? Number(data.record_configuration_id) : null
 					})
 				} catch (ex) {
 					let message = 'Je nám líto, ale něco se pokazilo.';
@@ -1190,7 +1213,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 					nodeName: 'button',
 					type: 'button',
 					className: 'primary icon-left small',
-					children: [Utils.useIcon('back'), {
+					children: [Utils.useIcon('arrow-left'), {
 						nodeName: 'span',
 						textContent: 'Zpět'
 					}],
@@ -1657,6 +1680,9 @@ GW.define('App.RecordConfigurations', 'GW.Component', {
 				ref: 'table',
 				getColumns: () => {
 					return [{
+						name: 'Název',
+						id: 'name'
+					},{
 						name: 'Jazyk',
 						id: 'language_name'
 					},{
@@ -1738,7 +1764,11 @@ GW.define('App.RecordConfigurations', 'GW.Component', {
 			renderFormFields() {
 				return [{
 					className: 'form-field-span',
-					children:[{
+					children: [{
+						label: 'Název',
+						xtype: 'TextField',
+						name: 'name'
+					},{
 						label: 'Jazyk',
 						xtype: 'SelectField',
 						options: App.DataManager.ttsLanguages,
@@ -1775,6 +1805,7 @@ GW.define('App.RecordConfigurations', 'GW.Component', {
 
 				setTimeout(() => {
 					this.originalData = row || {
+						name: '',
 						language_id: this.languageSelect.getValue(),
 						speaker_id: this.speakerSelect.getValue(),
 						pitch: 1,
@@ -1805,6 +1836,7 @@ GW.define('App.RecordConfigurations', 'GW.Component', {
 
 			async onSave(data) {
 				data = {
+					name: data.name,
 					language_id: Number(data.language_id),
 					speaker_id: Number(data.speaker_id),
 					pitch: Number(data.pitch),
@@ -1831,7 +1863,7 @@ GW.define('App.RecordConfigurations', 'GW.Component', {
 				const languageChange = Number(data.language_id) !== Number(prev.language_id);
 				const voiceChange = Number(data.voice) !== Number(prev.voice)
 
-				return languageChange || voiceChange || data.pitch !== prev.pitch || data.pitch !== prev.pitch;
+				return prev.name !== data.name || languageChange || voiceChange || data.pitch !== prev.pitch || data.pitch !== prev.pitch;
 			},
 
 			async 'before:destroy'() {

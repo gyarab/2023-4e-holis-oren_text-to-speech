@@ -1,0 +1,1 @@
+ALTER TABLE record_configuration ADD COLUMN name TEXT NOT NULL;
