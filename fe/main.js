@@ -1371,6 +1371,15 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 									nodeName: 'button',
 									type: 'button',
 									className: 'secondary icon-only small',
+									children: [Utils.useIcon('edit')],
+									'on:click': async () => me.renameFolder(row)
+								})
+
+								td.gwCreateChild({
+									':skip': row.permission === 'READ',
+									nodeName: 'button',
+									type: 'button',
+									className: 'secondary icon-only small',
 									children: [Utils.useIcon('delete')],
 									'on:click': async () => me.deleteDirectoryDialog(row)
 								})
@@ -1520,6 +1529,33 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 			async onSave(data) {
 				await REST.DELETE(`directory/${directory.id}?moveDirectoriesToRoot=${data.moveDirectoriesToRoot}`);
 				me.records = await REST.GET(`tts/record/list?directoryId=${me.directory?.id || ''}`);
+				me.table.setData(me.records);
+			}
+		})
+	},
+
+	renameFolder(directory) {
+		const me = this;
+
+		new Main.FormDialog({
+			title: 'Přejmenovat složku',
+
+			renderFormFields() {
+				return [{
+					xtype: 'TextField',
+					name: 'name',
+					label: 'Název',
+					value: directory.name
+				}];
+			},
+
+			async onSave(data) {
+				await REST.POST(`directory/${directory.id}`, {
+					name: data.name,
+					parent_id: directory.parent_id
+				});
+				const idx = me.records.findIndex(r => r.id === directory.id);
+				me.records[idx].name = data.name;
 				me.table.setData(me.records);
 			}
 		})
