@@ -154,7 +154,7 @@ class TextToSpeech {
 
 	buildRecordGet() {
 		return db.select()
-			.fields('sr.*, d.*, srl.language, srl.id AS language_id, sr.rate, sr.pitch, srv.id AS speaker_id, speaker, region, text')
+			.fields('sr.*, d.*, dr.permission, srl.language, srl.id AS language_id, sr.rate, sr.pitch, srv.id AS speaker_id, speaker, region, text')
 			.from(
 				'directories AS d',
 				'INNER JOIN directory_rights dr ON dr.directory_id = d.id',
@@ -223,9 +223,9 @@ class TextToSpeech {
 
 const textToSpeech = new TextToSpeech();
 
-async function checkSpeechRecord(id, user) {
+async function checkSpeechRecord(id, user, permissions) {
 	const dir = await validateId(id, 'directories');
-	await validateRightToFolder(user.id, dir.id);
+	await validateRightToFolder(user.id, dir.id, permissions);
 
 	const record = await db.select('speech_records')
 		.where('id = ?', dir.record_id)
@@ -430,7 +430,7 @@ app.delete_json('/tts/:id([0-9]+)', async req => {
 
 app.post_json('/tts/duplicate/:id([0-9]+)', async req => {
 	const recordDirectory = await validateId(req.params.id, 'directories');
-	const record = await checkSpeechRecord(recordDirectory.id, req.session);
+	const record = await checkSpeechRecord(recordDirectory.id, req.session, ['READ', 'WRITE']);
 
 	return await db.transaction(async tx => {
 		const recordSaved = await db.insert('speech_records', {
@@ -485,7 +485,7 @@ app.get_json('/tts/record/list', async req => {
 	let directory;
 	if (directoryId) {
 		directory = await validateId(directoryId, 'directories');
-		await validateRightToFolder(req.session.id, directory.id);
+		await validateRightToFolder(req.session.id, directory.id, ['READ', 'WRITE']);
 	}
 
 	const query = textToSpeech.buildRecordGet()

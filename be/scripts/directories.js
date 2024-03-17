@@ -5,7 +5,7 @@ const {validateStringNotEmpty, validateId} = require("./utils/validations");
 const db = new SQLBuilder();
 const app = express();
 
-async function validateRightToFolder(userId, directoryId) {
+async function validateRightToFolder(userId, directoryId, permissions=['WRITE']) {
 	const rights = await db.runQuery(`
         WITH RECURSIVE
             DirectoryPath AS (
@@ -25,7 +25,7 @@ async function validateRightToFolder(userId, directoryId) {
             )
         SELECT *
         FROM UserPermissions
-        WHERE permission = 'WRITE';
+        WHERE permission IN (${permissions.map(p => `'${p}'`).join(', ')});
 	`, [userId, directoryId])
 
 	if (!rights.length) {
@@ -124,7 +124,7 @@ app.delete_json('/directory/:id([0-9]+)', async req => {
 
 app.get_json('/directory/:id([0-9]+)', async req => {
 	const directory = await validateId(req.params.id, 'directories');
-	await validateRightToFolder(req.session.id, directory.id);
+	await validateRightToFolder(req.session.id, directory.id, ['READ', 'WRITE']);
 
 	return await db.select('directories')
 		.where('id = ?', directory.id)

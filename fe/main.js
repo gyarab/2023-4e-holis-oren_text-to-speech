@@ -1283,7 +1283,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 				xtype: 'SmartTable',
 				ref: 'table',
 				renderRow(tr, row) {
-					tr.setAttribute('draggable', true);
+					tr.setAttribute('draggable', row.permission === 'WRITE');
 					tr.setAttribute('dir-id', row.id)
 					tr.ondragstart = e => e.dataTransfer.setData("dir-id", row.id);
 
@@ -1294,7 +1294,8 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						if (!row.record_id) {
 							const id = Number(e.dataTransfer.getData("dir-id"));
 							await REST.POST(`directory/append/${id}?id=${row.id}`);
-							me.table.setData(me.records.filter(r => r.id !== id));
+							me.records = me.records.filter(r => r.id !== id);
+							me.table.setData(me.records);
 						} else {
 							Application.notify({
 								kind: 'info',
@@ -1313,6 +1314,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						id: 'id',
 						formatCell(td, v, row) {
 							row.record_id && td.gwCreateChild({
+								':skip': row.permission === 'READ',
 								ref: `checkbox${v}`,
 								xtype: 'AckCheckboxField'
 							}, me);
@@ -1354,6 +1356,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						formatCell(td, v, row) {
 							if (!row.record_id) {
 								td.gwCreateChild({
+									':skip': row.permission === 'READ',
 									nodeName: 'button',
 									type: 'button',
 									className: 'secondary icon-only small',
@@ -1578,6 +1581,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 
 		let popup = new PopupMenu({
 			options: [{
+				hidden: row.permission === 'READ',
 				iconName: 'edit',
 				text: 'Upravit',
 				cls: 'edit',
@@ -1609,6 +1613,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 					bind.table.setData(this.records);
 				}
 			},{
+				hidden: row.permission === 'READ',
 				iconName: 'delete',
 				text: 'Smazat',
 				cls: 'delete',
