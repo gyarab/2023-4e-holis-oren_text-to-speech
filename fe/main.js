@@ -1226,6 +1226,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						}
 					}
 				},{
+					ref: 'newRecord',
 					nodeName: 'button',
 					type: 'button',
 					className: 'primary icon-left small',
@@ -1247,6 +1248,7 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						textContent: 'Nový záznam'
 					}]
 				},{
+					ref: 'newFolder',
 					nodeName: 'button',
 					type: 'button',
 					className: 'primary icon-left small',
@@ -1620,6 +1622,8 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 			this.anyRecordsScreen()
 		} else if (!this.table) {
 			this.recordsScreen();
+			this.newRecord.disabled = this.directory && this.directory.permission === 'READ';
+			this.newFolder.disabled = this.directory && this.directory.permission === 'READ';
 		}
 
 		if (this.table) {

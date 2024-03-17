@@ -127,8 +127,14 @@ app.get_json('/directory/:id([0-9]+)', async req => {
 	const directory = await validateId(req.params.id, 'directories');
 	await validateRightToFolder(req.session.id, directory.id, ['READ', 'WRITE']);
 
-	return await db.select('directories')
+	return await db.select()
+		.fields('d.*, dr.permission')
+		.from(
+			'directories d',
+			'INNER JOIN directory_rights dr ON dr.directory_id = d.id',
+		)
 		.where('id = ?', directory.id)
+		.where('user_id = ?', req.session.id)
 		.oneOrNone();
 });
 

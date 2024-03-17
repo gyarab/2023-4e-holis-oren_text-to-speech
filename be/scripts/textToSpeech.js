@@ -539,6 +539,7 @@ app.get_json('/tts/record/:id([0-9]+)', async req => {
 
 	return await textToSpeech.buildRecordGet()
 		.where('d.id = ?', id)
+		.where('user_id = ?', req.session.id)
 		.oneOrNone();
 });
 
