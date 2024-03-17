@@ -1354,6 +1354,15 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						id: 'ctl',
 						name: '',
 						formatCell(td, v, row) {
+							td.gwCreateChild({
+								':skip': row.permission === 'READ',
+								nodeName: 'button',
+								type: 'button',
+								className: 'secondary icon-only small',
+								children: [Utils.useIcon('user')],
+								'on:click': async () => me.shareDirectoryDialog(row)
+							})
+
 							if (!row.record_id) {
 								td.gwCreateChild({
 									':skip': row.permission === 'READ',
@@ -1413,6 +1422,78 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 			async onSave(data) {
 				await REST.POST(`tts/configuration-change/${data.configuration_id}`, recordIds)
 				me.reloadTable();
+			}
+		})
+	},
+
+	async shareDirectoryDialog(directory) {
+		const users = await REST.GET(`directory/users/minified`);
+		const directoryAccessibleToUsers = await REST.GET(`directory/${directory.id}/users`);
+		const alreadyAddedIdSet = new Set(directoryAccessibleToUsers.map(u => u.user_id));
+
+		const getUsers = () => users.filter(u => !alreadyAddedIdSet.has(u.id)).map(u => ({text: u.username, value: u.id}));
+
+		new Main.FormDialog({
+			title: 'Sdílet',
+
+			renderFormFields() {
+				return [{
+					label: 'Uživatel',
+					xtype: 'SelectField',
+					ref: 'users',
+					options: getUsers(),
+					name: 'user_id'
+				},{
+					label: 'Právo',
+					xtype: 'SelectField',
+					name: 'permission',
+					options: [{text: 'Číst', value: 'READ'},{text: 'Číst a psát', value: 'WRITE'}]
+				},{
+					className: 'users-list',
+					children: [{
+						nodeName: 'h5',
+						textContent: 'Uživatelé'
+					},{
+						className: 'list',
+						children: directoryAccessibleToUsers.map(u => ({
+							className: 'user',
+							'attr:user-id': u.user_id,
+							children: [{
+								textContent: u.username
+							},{
+								textContent: ({READ: 'Číst', WRITE: 'Psát'})[u.permission]
+							},{
+								':skip': directory.owner === u.user_id,
+								children: [{
+									nodeName: 'button',
+									className: 'error-secondary icon-only',
+									children: [Utils.useIcon('delete')],
+									type: 'reset',
+									'on:click': async e => {
+										try {
+											await REST.DELETE(`directory/${directory.id}/permissions/${u.user_id}`);
+											const el = e.target.closest(`div[user-id='${u.user_id}']`);
+											el.remove();
+											alreadyAddedIdSet.delete(u.user_id);
+											this.users.setOptions(getUsers());
+										} catch (ex) {
+											Application.notify({
+												kind: 'error',
+												text: ex,
+												priority: 5,
+												timeout: 3000,
+											});
+										}
+									}
+								}]
+							}]
+						}))
+					}]
+				}];
+			},
+
+			async onSave(data) {
+				await REST.POST(`directory/${directory.id}/permissions`, data);
 			}
 		})
 	},

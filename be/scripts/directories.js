@@ -1,11 +1,12 @@
 const {express, ApiError} = require("./utils/aexpress");
 const SQLBuilder = require("./utils/SQLBuilder");
 const {validateStringNotEmpty, validateId} = require("./utils/validations");
+const {parseId} = require("./utils/utils");
 
 const db = new SQLBuilder();
 const app = express();
 
-async function validateRightToFolder(userId, directoryId, permissions=['WRITE']) {
+async function validateRightToFolder(userId, directoryId, permissions = ['WRITE']) {
 	const rights = await db.runQuery(`
         WITH RECURSIVE
             DirectoryPath AS (
@@ -25,7 +26,7 @@ async function validateRightToFolder(userId, directoryId, permissions=['WRITE'])
             )
         SELECT *
         FROM UserPermissions
-        WHERE permission IN (${permissions.map(p => `'${p}'`).join(', ')});
+        WHERE permission IN (${permissions.map(p => `'${p}'`).join(', ')}) AND directory_id = $2;
 	`, [userId, directoryId])
 
 	if (!rights.length) {
@@ -166,41 +167,74 @@ async function validateUserDirectoryPermission(req) {
 		throw new ApiError(404, 'Unknown permission');
 	}
 
-	if (req.session.id === directory.owner && data.permission === 'READ') {
+	if (user.id === directory.owner && data.permission === 'READ') {
 		throw new ApiError(409, 'Cannot decrease right of owner');
 	}
 
 	return {userId: user.id, permission: data.permission, directory}
 }
 
+app.get_json('/directory/:id([0-9]+)/users', async req => {
+	const id = parseId(req.params.id);
+	await validateRightToFolder(req.session.id, id);
+
+	return await db.select()
+		.fields('d.id, dr.permission, dr.user_id, u.username')
+		.from(
+			'directories d',
+			'INNER JOIN directory_rights dr ON dr.directory_id = d.id',
+			'INNER JOIN users u ON u.id = dr.user_id'
+		)
+		.where('d.id = ?', id)
+		.getList();
+});
+
+app.get_json('/directory/users/minified', async req => await db.select('users').fields('username, id').getList());
+
 app.post_json('/directory/:id([0-9]+)/permissions', async req => {
 	const data = await validateUserDirectoryPermission(req);
 
-	const alreadyAdded = await db.select('directory_rights')
-		.where('user_id = ?', data.userId)
-		.where('directory_id = ?', data.directory.id)
-		.oneOrNone();
+	const parentDirectories = await db.runQuery(`
+        WITH RECURSIVE parent_folders AS (
+            SELECT id, name, parent_id
+            FROM directories
+            WHERE id = $1
+            UNION ALL
+            SELECT d.id, d.name, d.parent_id
+            FROM directories d
+                     JOIN parent_folders pf ON d.id = pf.parent_id
+        )
+        SELECT *
+        FROM parent_folders;
+	`, [data.directory.id]);
 
-	if (alreadyAdded) {
-		return await db.insert('directory_rights', {
-			permission: data.permission,
-		}).oneOrNone();
-
-	} else {
-		return await db.insert('directory_rights', {
-			permission: data.permission,
+	for (const d of parentDirectories) {
+		await db.insert('directory_rights', {
+			permission: 'READ',
 			user_id: data.userId,
-			directory_id: data.directory.id
-		}).oneOrNone();
+			directory_id: d.id
+		}).more('ON CONFLICT (directory_id, user_id) DO NOTHING').run();
 	}
+
+	return await db.insert('directory_rights', {
+		permission: data.permission,
+		user_id: data.userId,
+		directory_id: data.directory.id
+	}).more('ON CONFLICT (directory_id, user_id) DO UPDATE SET permission = EXCLUDED.permission').run();
 });
 
-app.delete_json('/directory/:id([0-9]+)/permissions', async req => {
-	const data = await validateUserDirectoryPermission(req);
+app.delete_json('/directory/:id([0-9]+)/permissions/:userId([0-9]+)', async req => {
+	const directory = await validateId(req.params.id, 'directories');
+	await validateRightToFolder(req.session.id, directory.id);
+	const user = await validateId(req.params.userId, 'users');
+
+	if (user.id === directory.owner) {
+		throw new ApiError(409, 'Cannot decrease right of owner');
+	}
 
 	await db.delete('directory_rights')
-		.where('user_id = ?', data.userId)
-		.where('directory_id = ?', data.directory.id)
+		.where('user_id = ?', user.id)
+		.where('directory_id = ?', directory.id)
 		.run();
 });
 
