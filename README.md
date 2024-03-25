@@ -37,3 +37,5 @@ Environment file can be found in `be/scripts/env.js`. Here you can configure:
 - azure_tts - subscription key, region and languages which you want to use (their name must be in EN)
 - file_output - experimental setting of configurable file_output extension
 - record_visibility_mode - sets if all users can see all records or records are private and can only be shared
+
+TEST
