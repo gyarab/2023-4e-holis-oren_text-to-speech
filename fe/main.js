@@ -1191,10 +1191,19 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 		this.el.gwCreateChild({
 			'on:drop': async e => {
 				if (this.directory) {
-					e.stopPropagation();
-					const id = Number(e.dataTransfer.getData("dir-id"));
-					await REST.POST(`directory/append/${id}?id=${this.directory.parent_id || ''}`);
-					me.table.setData(me.records.filter(r => r.id !== id));
+					if (this.directory.permission === 'WRITE') {
+						e.stopPropagation();
+						const id = Number(e.dataTransfer.getData("dir-id"));
+						await REST.POST(`directory/append/${id}?id=${this.directory.parent_id || ''}`);
+						me.table.setData(me.records.filter(r => r.id !== id));
+					} else {
+						Application.notify({
+							kind: 'info',
+							text: 'Na složce nemáte právo zápisu',
+							priority: 5,
+							timeout: 3000,
+						});
+					}
 				}
 			},
 			className: 'panel-container',
@@ -1294,14 +1303,23 @@ GW.define('App.RecordsScreen', 'GW.Component', {
 						e.stopPropagation();
 
 						if (!row.record_id) {
-							const id = Number(e.dataTransfer.getData("dir-id"));
-							await REST.POST(`directory/append/${id}?id=${row.id}`);
-							me.records = me.records.filter(r => r.id !== id);
-							me.table.setData(me.records);
+							if (row.permission === 'WRITE') {
+								const id = Number(e.dataTransfer.getData("dir-id"));
+								await REST.POST(`directory/append/${id}?id=${row.id}`);
+								me.records = me.records.filter(r => r.id !== id);
+								me.table.setData(me.records);
+							} else {
+								Application.notify({
+									kind: 'info',
+									text: 'Na složce nemáte právo zápisu',
+									priority: 5,
+									timeout: 3000,
+								});
+							}
 						} else {
 							Application.notify({
 								kind: 'info',
-								text: 'Cannot move directory under file',
+								text: 'Nemůžete přesunout soubor pod jiný soubor',
 								priority: 5,
 								timeout: 3000,
 							});
